@@ -267,22 +267,22 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         return Spot(
                 name = "Yasaka Shrine",
                 city = "Kyoto",
-                url = "https://source.unsplash.com/Xq1ntWruZQI/600x800"
+                url = "https://images.unsplash.com/photo-1713346642924-fdda99d45870"
         )
     }
 
     private fun createSpots(): List<Spot> {
         val spots = ArrayList<Spot>()
-        spots.add(Spot(name = "Yasaka Shrine", city = "Kyoto", url = "https://source.unsplash.com/Xq1ntWruZQI/600x800"))
-        spots.add(Spot(name = "Fushimi Inari Shrine", city = "Kyoto", url = "https://source.unsplash.com/NYyCqdBOKwc/600x800"))
-        spots.add(Spot(name = "Bamboo Forest", city = "Kyoto", url = "https://source.unsplash.com/buF62ewDLcQ/600x800"))
-        spots.add(Spot(name = "Brooklyn Bridge", city = "New York", url = "https://source.unsplash.com/THozNzxEP3g/600x800"))
-        spots.add(Spot(name = "Empire State Building", city = "New York", url = "https://source.unsplash.com/USrZRcRS2Lw/600x800"))
-        spots.add(Spot(name = "The statue of Liberty", city = "New York", url = "https://source.unsplash.com/PeFk7fzxTdk/600x800"))
-        spots.add(Spot(name = "Louvre Museum", city = "Paris", url = "https://source.unsplash.com/LrMWHKqilUw/600x800"))
-        spots.add(Spot(name = "Eiffel Tower", city = "Paris", url = "https://source.unsplash.com/HN-5Z6AmxrM/600x800"))
-        spots.add(Spot(name = "Big Ben", city = "London", url = "https://source.unsplash.com/CdVAUADdqEc/600x800"))
-        spots.add(Spot(name = "Great Wall of China", city = "China", url = "https://source.unsplash.com/AWh9C-QjhE4/600x800"))
+        spots.add(Spot(name = "Yasaka Shrine", city = "Kyoto", url = "https://images.unsplash.com/photo-1713346642924-fdda99d45870"))
+        spots.add(Spot(name = "Fushimi Inari Shrine", city = "Kyoto", url = "https://images.unsplash.com/photo-1542767673-ee5103fedbb1"))
+        spots.add(Spot(name = "Bamboo Forest", city = "Kyoto", url = "https://images.unsplash.com/photo-1531021713651-fdd4ac075ac1"))
+        spots.add(Spot(name = "Brooklyn Bridge", city = "New York", url = "https://images.unsplash.com/photo-1585163435462-7e7796fa4b9e"))
+        spots.add(Spot(name = "Empire State Building", city = "New York", url = "https://images.unsplash.com/photo-1663052721527-0d971e81d257"))
+        spots.add(Spot(name = "The statue of Liberty", city = "New York", url = "https://images.unsplash.com/photo-1670821911205-00c0d9582b92"))
+        spots.add(Spot(name = "Louvre Museum", city = "Paris", url = "https://images.unsplash.com/photo-1555929940-b435de81524e"))
+        spots.add(Spot(name = "Eiffel Tower", city = "Paris", url = "https://images.unsplash.com/photo-1609971757431-439cf7b4141b"))
+        spots.add(Spot(name = "Big Ben", city = "London", url = "https://images.unsplash.com/photo-1454793147212-9e7e57e89a4f"))
+        spots.add(Spot(name = "Great Wall of China", city = "China", url = "https://images.unsplash.com/photo-1558981017-9c65fb6f2530"))
         return spots
     }
 
