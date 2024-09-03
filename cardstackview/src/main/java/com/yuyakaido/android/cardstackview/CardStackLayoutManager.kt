@@ -1,283 +1,247 @@
-package com.yuyakaido.android.cardstackview;
+package com.yuyakaido.android.cardstackview
 
-import android.content.Context;
-import android.graphics.PointF;
-import android.os.Handler;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Interpolator;
+import android.content.Context
+import android.graphics.PointF
+import android.os.Handler
+import android.util.Log
+import android.view.View
+import android.view.ViewGroup
+import android.view.animation.Interpolator
+import androidx.annotation.FloatRange
+import androidx.annotation.IntRange
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.Recycler
+import androidx.recyclerview.widget.RecyclerView.SmoothScroller.ScrollVectorProvider
+import com.yuyakaido.android.cardstackview.internal.CardStackSetting
+import com.yuyakaido.android.cardstackview.internal.CardStackSmoothScroller
+import com.yuyakaido.android.cardstackview.internal.CardStackState
+import com.yuyakaido.android.cardstackview.internal.DisplayUtil
 
-import androidx.annotation.FloatRange;
-import androidx.annotation.IntRange;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+class CardStackLayoutManager
+@JvmOverloads constructor(
+    private val context: Context,
+    listener: CardStackListener = CardStackListener.DEFAULT
+) : RecyclerView.LayoutManager(), ScrollVectorProvider {
+    var cardStackListener: CardStackListener = CardStackListener.DEFAULT
+    val cardStackSetting: CardStackSetting = CardStackSetting()
+    val cardStackState: CardStackState = CardStackState()
 
-import com.yuyakaido.android.cardstackview.internal.CardStackSetting;
-import com.yuyakaido.android.cardstackview.internal.CardStackSmoothScroller;
-import com.yuyakaido.android.cardstackview.internal.CardStackState;
-import com.yuyakaido.android.cardstackview.internal.DisplayUtil;
-
-import java.util.List;
-
-public class CardStackLayoutManager
-        extends RecyclerView.LayoutManager
-        implements RecyclerView.SmoothScroller.ScrollVectorProvider {
-
-    private final Context context;
-
-    private CardStackListener listener = CardStackListener.DEFAULT;
-    private CardStackSetting setting = new CardStackSetting();
-    private CardStackState state = new CardStackState();
-
-    public CardStackLayoutManager(Context context) {
-        this(context, CardStackListener.DEFAULT);
+    init {
+        this.cardStackListener = listener
     }
 
-    public CardStackLayoutManager(Context context, CardStackListener listener) {
-        this.context = context;
-        this.listener = listener;
+    override fun generateDefaultLayoutParams(): RecyclerView.LayoutParams {
+        return RecyclerView.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
     }
 
-    @Override
-    public RecyclerView.LayoutParams generateDefaultLayoutParams() {
-        return new RecyclerView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        );
-    }
-
-    @Override
-    public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State s) {
-        update(recycler);
+    override fun onLayoutChildren(recycler: Recycler, s: RecyclerView.State) {
+        update(recycler)
         if (s.didStructureChange()) {
-            View topView = getTopView();
+            val topView = topView
             if (topView != null) {
-                listener.onCardAppeared(getTopView(), state.topPosition);
+                cardStackListener.onCardAppeared(this.topView, cardStackState.topPosition)
             }
         }
     }
 
-    @Override
-    public boolean canScrollHorizontally() {
-        return setting.swipeableMethod.canSwipe() && setting.canScrollHorizontal;
+    override fun canScrollHorizontally(): Boolean {
+        return cardStackSetting.swipeableMethod.canSwipe() && cardStackSetting.canScrollHorizontal
     }
 
-    @Override
-    public boolean canScrollVertically() {
-        return setting.swipeableMethod.canSwipe() && setting.canScrollVertical;
+    override fun canScrollVertically(): Boolean {
+        return cardStackSetting.swipeableMethod.canSwipe() && cardStackSetting.canScrollVertical
     }
 
-    @Override
-    public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler, RecyclerView.State s) {
-        if (state.topPosition == getItemCount()) {
-            return 0;
+    override fun scrollHorizontallyBy(dx: Int, recycler: Recycler, s: RecyclerView.State): Int {
+        if (cardStackState.topPosition == itemCount) {
+            return 0
         }
 
-        switch (state.status) {
-            case Idle:
-                if (setting.swipeableMethod.canSwipeManually()) {
-                    state.dx -= dx;
-                    update(recycler);
-                    return dx;
-                }
-                break;
-            case Dragging:
-                if (setting.swipeableMethod.canSwipeManually()) {
-                    state.dx -= dx;
-                    update(recycler);
-                    return dx;
-                }
-                break;
-            case RewindAnimating:
-                state.dx -= dx;
-                update(recycler);
-                return dx;
-            case AutomaticSwipeAnimating:
-                if (setting.swipeableMethod.canSwipeAutomatically()) {
-                    state.dx -= dx;
-                    update(recycler);
-                    return dx;
-                }
-                break;
-            case AutomaticSwipeAnimated:
-                break;
-            case ManualSwipeAnimating:
-                if (setting.swipeableMethod.canSwipeManually()) {
-                    state.dx -= dx;
-                    update(recycler);
-                    return dx;
-                }
-                break;
-            case ManualSwipeAnimated:
-                break;
-        }
+        when (cardStackState.status) {
+            CardStackState.Status.Idle -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                cardStackState.dx -= dx
+                update(recycler)
+                return dx
+            }
 
-        return 0;
+            CardStackState.Status.Dragging -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                cardStackState.dx -= dx
+                update(recycler)
+                return dx
+            }
+
+            CardStackState.Status.RewindAnimating -> {
+                cardStackState.dx -= dx
+                update(recycler)
+                return dx
+            }
+
+            CardStackState.Status.AutomaticSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeAutomatically()) {
+                cardStackState.dx -= dx
+                update(recycler)
+                return dx
+            }
+
+            CardStackState.Status.AutomaticSwipeAnimated -> {}
+            CardStackState.Status.ManualSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                cardStackState.dx -= dx
+                update(recycler)
+                return dx
+            }
+
+            CardStackState.Status.ManualSwipeAnimated -> {}
+
+            null -> {
+                Log.e("CardStackLayoutManager", "status is null")
+            }
+        }
+        return 0
     }
 
-    @Override
-    public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State s) {
-        if (state.topPosition == getItemCount()) {
-            return 0;
+    override fun scrollVerticallyBy(dy: Int, recycler: Recycler, s: RecyclerView.State): Int {
+        if (cardStackState.topPosition == itemCount) {
+            return 0
         }
 
-        switch (state.status) {
-            case Idle:
-                if (setting.swipeableMethod.canSwipeManually()) {
-                    state.dy -= dy;
-                    update(recycler);
-                    return dy;
-                }
-                break;
-            case Dragging:
-                if (setting.swipeableMethod.canSwipeManually()) {
-                    state.dy -= dy;
-                    update(recycler);
-                    return dy;
-                }
-                break;
-            case RewindAnimating:
-                state.dy -= dy;
-                update(recycler);
-                return dy;
-            case AutomaticSwipeAnimating:
-                if (setting.swipeableMethod.canSwipeAutomatically()) {
-                    state.dy -= dy;
-                    update(recycler);
-                    return dy;
-                }
-                break;
-            case AutomaticSwipeAnimated:
-                break;
-            case ManualSwipeAnimating:
-                if (setting.swipeableMethod.canSwipeManually()) {
-                    state.dy -= dy;
-                    update(recycler);
-                    return dy;
-                }
-                break;
-            case ManualSwipeAnimated:
-                break;
+        when (cardStackState.status) {
+            CardStackState.Status.Idle -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                cardStackState.dy -= dy
+                update(recycler)
+                return dy
+            }
+
+            CardStackState.Status.Dragging -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                cardStackState.dy -= dy
+                update(recycler)
+                return dy
+            }
+
+            CardStackState.Status.RewindAnimating -> {
+                cardStackState.dy -= dy
+                update(recycler)
+                return dy
+            }
+
+            CardStackState.Status.AutomaticSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeAutomatically()) {
+                cardStackState.dy -= dy
+                update(recycler)
+                return dy
+            }
+
+            CardStackState.Status.AutomaticSwipeAnimated -> {}
+            CardStackState.Status.ManualSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                cardStackState.dy -= dy
+                update(recycler)
+                return dy
+            }
+
+            CardStackState.Status.ManualSwipeAnimated -> {}
+
+            null -> {
+                Log.e("CardStackLayoutManager", "status is null")
+            }
         }
-        return 0;
+        return 0
     }
 
-    @Override
-    public void onScrollStateChanged(int s) {
-        switch (s) {
-            // スクロールが止まったタイミング
-            case RecyclerView.SCROLL_STATE_IDLE:
-                if (state.targetPosition == RecyclerView.NO_POSITION) {
-                    // Swipeが完了した場合の処理
-                    state.next(CardStackState.Status.Idle);
-                    state.targetPosition = RecyclerView.NO_POSITION;
-                } else if (state.topPosition == state.targetPosition) {
-                    // Rewindが完了した場合の処理
-                    state.next(CardStackState.Status.Idle);
-                    state.targetPosition = RecyclerView.NO_POSITION;
+    override fun onScrollStateChanged(s: Int) {
+        when (s) {
+            RecyclerView.SCROLL_STATE_IDLE -> if (cardStackState.targetPosition == RecyclerView.NO_POSITION) {
+                // Processing when Swipe is completed
+                cardStackState.next(CardStackState.Status.Idle)
+                cardStackState.targetPosition = RecyclerView.NO_POSITION
+            } else if (cardStackState.topPosition == cardStackState.targetPosition) {
+                // Processing when Rewind is completed
+                cardStackState.next(CardStackState.Status.Idle)
+                cardStackState.targetPosition = RecyclerView.NO_POSITION
+            } else {
+                // Handling of two or more cards swiped at the same time
+                if (cardStackState.topPosition < cardStackState.targetPosition) {
+                    // When the first card is swiped, SCROLL_STATE_IDLE is played once.
+                    // The next animation is run at that timing to make it look like a series of swipes.
+                    smoothScrollToNext(cardStackState.targetPosition)
                 } else {
-                    // 2枚以上のカードを同時にスワイプする場合の処理
-                    if (state.topPosition < state.targetPosition) {
-                        // 1枚目のカードをスワイプすると一旦SCROLL_STATE_IDLEが流れる
-                        // そのタイミングで次のアニメーションを走らせることで連続でスワイプしているように見せる
-                        smoothScrollToNext(state.targetPosition);
-                    } else {
-                        // Nextの場合と同様に、1枚目の処理が完了したタイミングで次のアニメーションを走らせる
-                        smoothScrollToPrevious(state.targetPosition);
-                    }
+                    // As in the case of Next, run the next animation at the timing when the processing of the first piece is completed.
+                    smoothScrollToPrevious(cardStackState.targetPosition)
                 }
-                break;
-            // カードをドラッグしている最中
-            case RecyclerView.SCROLL_STATE_DRAGGING:
-                if (setting.swipeableMethod.canSwipeManually()) {
-                    state.next(CardStackState.Status.Dragging);
-                }
-                break;
-            // カードが指から離れたタイミング
-            case RecyclerView.SCROLL_STATE_SETTLING:
-                break;
+            }
+
+            RecyclerView.SCROLL_STATE_DRAGGING -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                cardStackState.next(CardStackState.Status.Dragging)
+            }
+
+            RecyclerView.SCROLL_STATE_SETTLING -> {}
         }
     }
 
-    @Override
-    public PointF computeScrollVectorForPosition(int targetPosition) {
-        return null;
+    override fun computeScrollVectorForPosition(targetPosition: Int): PointF? {
+        return null
     }
 
-    @Override
-    public void scrollToPosition(int position) {
-        if (setting.swipeableMethod.canSwipeAutomatically()) {
-            if (state.canScrollToPosition(position, getItemCount())) {
-                state.topPosition = position;
-                requestLayout();
+    override fun scrollToPosition(position: Int) {
+        if (cardStackSetting.swipeableMethod.canSwipeAutomatically()) {
+            if (cardStackState.canScrollToPosition(position, itemCount)) {
+                cardStackState.topPosition = position
+                requestLayout()
             }
         }
     }
 
-    @Override
-    public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State s, int position) {
-        if (setting.swipeableMethod.canSwipeAutomatically()) {
-            if (state.canScrollToPosition(position, getItemCount())) {
-                smoothScrollToPosition(position);
+    override fun smoothScrollToPosition(
+        recyclerView: RecyclerView,
+        s: RecyclerView.State,
+        position: Int
+    ) {
+        if (cardStackSetting.swipeableMethod.canSwipeAutomatically()) {
+            if (cardStackState.canScrollToPosition(position, itemCount)) {
+                smoothScrollToPosition(position)
             }
         }
     }
 
-    @NonNull
-    public CardStackSetting getCardStackSetting() {
-        return setting;
-    }
-
-    @NonNull
-    public CardStackState getCardStackState() {
-        return state;
-    }
-
-    @NonNull
-    public CardStackListener getCardStackListener() {
-        return listener;
-    }
-
-    void updateProportion(float x, float y) {
-        if (getTopPosition() < getItemCount()) {
-            View view = findViewByPosition(getTopPosition());
+    fun updateProportion(x: Float, y: Float) {
+        if (topPosition < itemCount) {
+            val view = findViewByPosition(topPosition)
             if (view != null) {
-                float half = getHeight() / 2.0f;
-                state.proportion = -(y - half - view.getTop()) / half;
+                val half = height / 2.0f
+                cardStackState.proportion = -(y - half - view.top) / half
             }
         }
     }
 
-    private void update(RecyclerView.Recycler recycler) {
-        state.width = getWidth();
-        state.height = getHeight();
+    private fun update(recycler: Recycler) {
+        cardStackState.width = width
+        cardStackState.height = height
 
-        if (state.isSwipeCompleted()) {
-            // ■ 概要
-            // スワイプが完了したタイミングで、スワイプ済みのViewをキャッシュから削除する
-            // キャッシュの削除を行わないと、次回更新時にスワイプ済みのカードが表示されてしまう
-            // スワイプ済みカードが表示される場合、データソースは正しく、表示だけが古い状態になっている
+        if (cardStackState.isSwipeCompleted) {
+            // Overview
+            // When a swipe is completed, the swiped View must be deleted from the cache,
+            // or the swiped card will be displayed at the next refresh If the swiped card
+            // is displayed, the data source is correct, only the view is out of date.
             //
-            // ■ 再現手順
-            // 1. `removeAndRecycleView(getTopView(), recycler);`をコメントアウトする
-            // 2. VisibleCount=1に設定し、最後のカードがスワイプされたらページングを行うようにする
-            // 3. カードを1枚だけ画面に表示する（このカードをAとする）
-            // 4. Aをスワイプする
-            // 5. カードを1枚だけ画面に表示する（このカードをBとする）
-            // 6. ページング完了後はBが表示されるはずが、Aが画面に表示される
-            removeAndRecycleView(getTopView(), recycler);
+            // Reproduction Procedure
+            // 1. `removeAndRecycleView(getTopView(), recycler);` Comment out
+            // 2. VisibleCount=1 and set paging to occur when the last card is swiped
+            // 3. Display only one card on the screen (let this card be A)
+            // 4. Swipe A
+            // 5. Display only one card on the screen (let this card be B)
+            // 6. After paging is complete, B should be displayed, but A appears on the screen
+            removeAndRecycleView(topView!!, recycler)
 
-            final Direction direction = state.getDirection();
+            val direction = cardStackState.direction
 
-            state.next(state.status.toAnimatedStatus());
-            state.topPosition++;
-            state.dx = 0;
-            state.dy = 0;
-            if (state.topPosition == state.targetPosition) {
-                state.targetPosition = RecyclerView.NO_POSITION;
+            cardStackState.next(cardStackState.status.toAnimatedStatus())
+            cardStackState.topPosition++
+            cardStackState.dx = 0
+            cardStackState.dy = 0
+            if (cardStackState.topPosition == cardStackState.targetPosition) {
+                cardStackState.targetPosition = RecyclerView.NO_POSITION
             }
 
-            /* Handlerを経由してイベント通知を行っているのは、以下のエラーを回避するため
+            /* Event notification via Handler is done to avoid the following error:
              *
              * 2019-03-31 18:44:29.744 8496-8496/com.yuyakaido.android.cardstackview.sample E/AndroidRuntime: FATAL EXCEPTION: main
              *     Process: com.yuyakaido.android.cardstackview.sample, PID: 8496
@@ -308,333 +272,293 @@ public class CardStackLayoutManager
              *         at com.android.internal.os.Zygote$MethodAndArgsCaller.run(Zygote.java:240)
              *         at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:767)
              */
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onCardSwiped(direction);
-                    View topView = getTopView();
-                    if (topView != null) {
-                        listener.onCardAppeared(getTopView(), state.topPosition);
-                    }
+            Handler().post(object : Runnable {
+                override fun run() {
+                    cardStackListener.onCardSwiped(direction)
+                    val topView: View = topView ?: return
+                    cardStackListener.onCardAppeared(topView, cardStackState.topPosition)
                 }
-            });
+            })
         }
 
-        detachAndScrapAttachedViews(recycler);
+        detachAndScrapAttachedViews(recycler)
 
-        final int parentTop = getPaddingTop();
-        final int parentLeft = getPaddingLeft();
-        final int parentRight = getWidth() - getPaddingLeft();
-        final int parentBottom = getHeight() - getPaddingBottom();
-        for (int i = state.topPosition; i < state.topPosition + setting.visibleCount && i < getItemCount(); i++) {
-            View child = recycler.getViewForPosition(i);
-            addView(child, 0);
-            measureChildWithMargins(child, 0, 0);
-            layoutDecoratedWithMargins(child, parentLeft, parentTop, parentRight, parentBottom);
+        val parentTop = paddingTop
+        val parentLeft = paddingLeft
+        val parentRight = width - paddingLeft
+        val parentBottom = height - paddingBottom
+        var i = cardStackState.topPosition
+        while (i < cardStackState.topPosition + cardStackSetting.visibleCount && i < itemCount) {
+            val child = recycler.getViewForPosition(i)
+            addView(child, 0)
+            measureChildWithMargins(child, 0, 0)
+            layoutDecoratedWithMargins(child, parentLeft, parentTop, parentRight, parentBottom)
 
-            resetTranslation(child);
-            resetScale(child);
-            resetRotation(child);
-            resetOverlay(child);
+            resetTranslation(child)
+            resetScale(child)
+            resetRotation(child)
+            resetOverlay(child)
 
-            if (i == state.topPosition) {
-                updateTranslation(child);
-                resetScale(child);
-                updateRotation(child);
-                updateOverlay(child);
+            if (i == cardStackState.topPosition) {
+                updateTranslation(child)
+                resetScale(child)
+                updateRotation(child)
+                updateOverlay(child)
             } else {
-                int currentIndex = i - state.topPosition;
-                updateTranslation(child, currentIndex);
-                updateScale(child, currentIndex);
-                resetRotation(child);
-                resetOverlay(child);
+                val currentIndex = i - cardStackState.topPosition
+                updateTranslation(child, currentIndex)
+                updateScale(child, currentIndex)
+                resetRotation(child)
+                resetOverlay(child)
+            }
+            i++
+        }
+
+        if (cardStackState.status.isDragging) {
+            cardStackListener.onCardDragging(cardStackState.direction, cardStackState.ratio)
+        }
+    }
+
+    private fun updateTranslation(view: View) {
+        view.translationX = cardStackState.dx.toFloat()
+        view.translationY = cardStackState.dy.toFloat()
+    }
+
+    private fun updateTranslation(view: View, index: Int) {
+        val nextIndex = index - 1
+        val translationPx = DisplayUtil.dpToPx(context, cardStackSetting.translationInterval)
+        val currentTranslation = (index * translationPx).toFloat()
+        val nextTranslation = (nextIndex * translationPx).toFloat()
+        val targetTranslation =
+            currentTranslation - (currentTranslation - nextTranslation) * cardStackState.ratio
+        when (cardStackSetting.stackFrom) {
+            StackFrom.None -> {}
+            StackFrom.Top -> view.translationY = -targetTranslation
+            StackFrom.TopAndLeft -> {
+                view.translationY = -targetTranslation
+                view.translationX = -targetTranslation
+            }
+
+            StackFrom.TopAndRight -> {
+                view.translationY = -targetTranslation
+                view.translationX = targetTranslation
+            }
+
+            StackFrom.Bottom -> view.translationY = targetTranslation
+            StackFrom.BottomAndLeft -> {
+                view.translationY = targetTranslation
+                view.translationX = -targetTranslation
+            }
+
+            StackFrom.BottomAndRight -> {
+                view.translationY = targetTranslation
+                view.translationX = targetTranslation
+            }
+
+            StackFrom.Left -> view.translationX = -targetTranslation
+            StackFrom.Right -> view.translationX = targetTranslation
+        }
+    }
+
+    private fun resetTranslation(view: View) {
+        view.translationX = 0.0f
+        view.translationY = 0.0f
+    }
+
+    private fun updateScale(view: View, index: Int) {
+        val nextIndex = index - 1
+        val currentScale = 1.0f - index * (1.0f - cardStackSetting.scaleInterval)
+        val nextScale = 1.0f - nextIndex * (1.0f - cardStackSetting.scaleInterval)
+        val targetScale = currentScale + (nextScale - currentScale) * cardStackState.ratio
+        when (cardStackSetting.stackFrom) {
+            StackFrom.None -> {
+                view.scaleX = targetScale
+                view.scaleY = targetScale
+            }
+
+            StackFrom.Top -> view.scaleX = targetScale
+            StackFrom.TopAndLeft -> view.scaleX = targetScale
+            StackFrom.TopAndRight -> view.scaleX = targetScale
+            StackFrom.Bottom -> view.scaleX = targetScale
+            StackFrom.BottomAndLeft -> view.scaleX = targetScale
+            StackFrom.BottomAndRight -> view.scaleX = targetScale
+            StackFrom.Left ->                 // TODO Should handle ScaleX
+                view.scaleY = targetScale
+
+            StackFrom.Right ->                 // TODO Should handle ScaleX
+                view.scaleY = targetScale
+        }
+    }
+
+    private fun resetScale(view: View) {
+        view.scaleX = 1.0f
+        view.scaleY = 1.0f
+    }
+
+    private fun updateRotation(view: View) {
+        val degree =
+            cardStackState.dx * cardStackSetting.maxDegree / width * cardStackState.proportion
+        view.rotation = degree
+    }
+
+    private fun resetRotation(view: View) {
+        view.rotation = 0.0f
+    }
+
+    private fun updateOverlay(view: View) {
+        val leftOverlay = view.findViewById<View>(R.id.left_overlay)
+        if (leftOverlay != null) {
+            leftOverlay.alpha = 0.0f
+        }
+        val rightOverlay = view.findViewById<View>(R.id.right_overlay)
+        if (rightOverlay != null) {
+            rightOverlay.alpha = 0.0f
+        }
+        val topOverlay = view.findViewById<View>(R.id.top_overlay)
+        if (topOverlay != null) {
+            topOverlay.alpha = 0.0f
+        }
+        val bottomOverlay = view.findViewById<View>(R.id.bottom_overlay)
+        if (bottomOverlay != null) {
+            bottomOverlay.alpha = 0.0f
+        }
+        val direction = cardStackState.direction
+        val alpha = cardStackSetting.overlayInterpolator.getInterpolation(
+            cardStackState.ratio
+        )
+        when (direction) {
+            Direction.Left -> if (leftOverlay != null) {
+                leftOverlay.alpha = alpha
+            }
+
+            Direction.Right -> if (rightOverlay != null) {
+                rightOverlay.alpha = alpha
+            }
+
+            Direction.Top -> if (topOverlay != null) {
+                topOverlay.alpha = alpha
+            }
+
+            Direction.Bottom -> if (bottomOverlay != null) {
+                bottomOverlay.alpha = alpha
             }
         }
-
-        if (state.status.isDragging()) {
-            listener.onCardDragging(state.getDirection(), state.getRatio());
-        }
     }
 
-    private void updateTranslation(View view) {
-        view.setTranslationX(state.dx);
-        view.setTranslationY(state.dy);
-    }
-
-    private void updateTranslation(View view, int index) {
-        int nextIndex = index - 1;
-        int translationPx = DisplayUtil.dpToPx(context, setting.translationInterval);
-        float currentTranslation = index * translationPx;
-        float nextTranslation = nextIndex * translationPx;
-        float targetTranslation = currentTranslation - (currentTranslation - nextTranslation) * state.getRatio();
-        switch (setting.stackFrom) {
-            case None:
-                // Do nothing
-                break;
-            case Top:
-                view.setTranslationY(-targetTranslation);
-                break;
-            case TopAndLeft:
-                view.setTranslationY(-targetTranslation);
-                view.setTranslationX(-targetTranslation);
-                break;
-            case TopAndRight:
-                view.setTranslationY(-targetTranslation);
-                view.setTranslationX(targetTranslation);
-                break;
-            case Bottom:
-                view.setTranslationY(targetTranslation);
-                break;
-            case BottomAndLeft:
-                view.setTranslationY(targetTranslation);
-                view.setTranslationX(-targetTranslation);
-                break;
-            case BottomAndRight:
-                view.setTranslationY(targetTranslation);
-                view.setTranslationX(targetTranslation);
-                break;
-            case Left:
-                view.setTranslationX(-targetTranslation);
-                break;
-            case Right:
-                view.setTranslationX(targetTranslation);
-                break;
-        }
-    }
-
-    private void resetTranslation(View view) {
-        view.setTranslationX(0.0f);
-        view.setTranslationY(0.0f);
-    }
-
-    private void updateScale(View view, int index) {
-        int nextIndex = index - 1;
-        float currentScale = 1.0f - index * (1.0f - setting.scaleInterval);
-        float nextScale = 1.0f - nextIndex * (1.0f - setting.scaleInterval);
-        float targetScale = currentScale + (nextScale - currentScale) * state.getRatio();
-        switch (setting.stackFrom) {
-            case None:
-                view.setScaleX(targetScale);
-                view.setScaleY(targetScale);
-                break;
-            case Top:
-                view.setScaleX(targetScale);
-                // TODO Should handle ScaleY
-                break;
-            case TopAndLeft:
-                view.setScaleX(targetScale);
-                // TODO Should handle ScaleY
-                break;
-            case TopAndRight:
-                view.setScaleX(targetScale);
-                // TODO Should handle ScaleY
-                break;
-            case Bottom:
-                view.setScaleX(targetScale);
-                // TODO Should handle ScaleY
-                break;
-            case BottomAndLeft:
-                view.setScaleX(targetScale);
-                // TODO Should handle ScaleY
-                break;
-            case BottomAndRight:
-                view.setScaleX(targetScale);
-                // TODO Should handle ScaleY
-                break;
-            case Left:
-                // TODO Should handle ScaleX
-                view.setScaleY(targetScale);
-                break;
-            case Right:
-                // TODO Should handle ScaleX
-                view.setScaleY(targetScale);
-                break;
-        }
-    }
-
-    private void resetScale(View view) {
-        view.setScaleX(1.0f);
-        view.setScaleY(1.0f);
-    }
-
-    private void updateRotation(View view) {
-        float degree = state.dx * setting.maxDegree / getWidth() * state.proportion;
-        view.setRotation(degree);
-    }
-
-    private void resetRotation(View view) {
-        view.setRotation(0.0f);
-    }
-
-    private void updateOverlay(View view) {
-        View leftOverlay = view.findViewById(R.id.left_overlay);
+    private fun resetOverlay(view: View) {
+        val leftOverlay = view.findViewById<View>(R.id.left_overlay)
         if (leftOverlay != null) {
-            leftOverlay.setAlpha(0.0f);
+            leftOverlay.alpha = 0.0f
         }
-        View rightOverlay = view.findViewById(R.id.right_overlay);
+        val rightOverlay = view.findViewById<View>(R.id.right_overlay)
         if (rightOverlay != null) {
-            rightOverlay.setAlpha(0.0f);
+            rightOverlay.alpha = 0.0f
         }
-        View topOverlay = view.findViewById(R.id.top_overlay);
+        val topOverlay = view.findViewById<View>(R.id.top_overlay)
         if (topOverlay != null) {
-            topOverlay.setAlpha(0.0f);
+            topOverlay.alpha = 0.0f
         }
-        View bottomOverlay = view.findViewById(R.id.bottom_overlay);
+        val bottomOverlay = view.findViewById<View>(R.id.bottom_overlay)
         if (bottomOverlay != null) {
-            bottomOverlay.setAlpha(0.0f);
-        }
-        Direction direction = state.getDirection();
-        float alpha = setting.overlayInterpolator.getInterpolation(state.getRatio());
-        switch (direction) {
-            case Left:
-                if (leftOverlay != null) {
-                    leftOverlay.setAlpha(alpha);
-                }
-                break;
-            case Right:
-                if (rightOverlay != null) {
-                    rightOverlay.setAlpha(alpha);
-                }
-                break;
-            case Top:
-                if (topOverlay != null) {
-                    topOverlay.setAlpha(alpha);
-                }
-                break;
-            case Bottom:
-                if (bottomOverlay != null) {
-                    bottomOverlay.setAlpha(alpha);
-                }
-                break;
+            bottomOverlay.alpha = 0.0f
         }
     }
 
-    private void resetOverlay(View view) {
-        View leftOverlay = view.findViewById(R.id.left_overlay);
-        if (leftOverlay != null) {
-            leftOverlay.setAlpha(0.0f);
-        }
-        View rightOverlay = view.findViewById(R.id.right_overlay);
-        if (rightOverlay != null) {
-            rightOverlay.setAlpha(0.0f);
-        }
-        View topOverlay = view.findViewById(R.id.top_overlay);
-        if (topOverlay != null) {
-            topOverlay.setAlpha(0.0f);
-        }
-        View bottomOverlay = view.findViewById(R.id.bottom_overlay);
-        if (bottomOverlay != null) {
-            bottomOverlay.setAlpha(0.0f);
-        }
-    }
-
-    private void smoothScrollToPosition(int position) {
-        if (state.topPosition < position) {
-            smoothScrollToNext(position);
+    private fun smoothScrollToPosition(position: Int) {
+        if (cardStackState.topPosition < position) {
+            smoothScrollToNext(position)
         } else {
-            smoothScrollToPrevious(position);
+            smoothScrollToPrevious(position)
         }
     }
 
-    private void smoothScrollToNext(int position) {
-        state.proportion = 0.0f;
-        state.targetPosition = position;
-        CardStackSmoothScroller scroller = new CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.AutomaticSwipe, this);
-        scroller.setTargetPosition(state.topPosition);
-        startSmoothScroll(scroller);
+    private fun smoothScrollToNext(position: Int) {
+        cardStackState.proportion = 0.0f
+        cardStackState.targetPosition = position
+        val scroller =
+            CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.AutomaticSwipe, this)
+        scroller.targetPosition = cardStackState.topPosition
+        startSmoothScroll(scroller)
     }
 
-    private void smoothScrollToPrevious(int position) {
-        View topView = getTopView();
+    private fun smoothScrollToPrevious(position: Int) {
+        val topView = topView
         if (topView != null) {
-            listener.onCardDisappeared(getTopView(), state.topPosition);
+            cardStackListener.onCardDisappeared(this.topView, cardStackState.topPosition)
         }
 
-        state.proportion = 0.0f;
-        state.targetPosition = position;
-        state.topPosition--;
-        CardStackSmoothScroller scroller = new CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.AutomaticRewind, this);
-        scroller.setTargetPosition(state.topPosition);
-        startSmoothScroll(scroller);
+        cardStackState.proportion = 0.0f
+        cardStackState.targetPosition = position
+        cardStackState.topPosition--
+        val scroller =
+            CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.AutomaticRewind, this)
+        scroller.targetPosition = cardStackState.topPosition
+        startSmoothScroll(scroller)
     }
 
-    public View getTopView() {
-        return findViewByPosition(state.topPosition);
-    }
+    val topView: View?
+        get() = findViewByPosition(cardStackState.topPosition)
 
-    public int getTopPosition() {
-        return state.topPosition;
-    }
-
-    public void setTopPosition(int topPosition) {
-        state.topPosition = topPosition;
-    }
-
-    public void setStackFrom(@NonNull StackFrom stackFrom) {
-        setting.stackFrom = stackFrom;
-    }
-
-    public void setVisibleCount(@IntRange(from = 1) int visibleCount) {
-        if (visibleCount < 1) {
-            throw new IllegalArgumentException("VisibleCount must be greater than 0.");
+    var topPosition: Int
+        get() = cardStackState.topPosition
+        set(topPosition) {
+            cardStackState.topPosition = topPosition
         }
-        setting.visibleCount = visibleCount;
+
+    fun setStackFrom(stackFrom: StackFrom) {
+        cardStackSetting.stackFrom = stackFrom
     }
 
-    public void setTranslationInterval(@FloatRange(from = 0.0f) float translationInterval) {
-        if (translationInterval < 0.0f) {
-            throw new IllegalArgumentException("TranslationInterval must be greater than or equal 0.0f");
-        }
-        setting.translationInterval = translationInterval;
+    fun setVisibleCount(@IntRange(from = 1) visibleCount: Int) {
+        require(visibleCount >= 1) { "VisibleCount must be greater than 0." }
+        cardStackSetting.visibleCount = visibleCount
     }
 
-    public void setScaleInterval(@FloatRange(from = 0.0f) float scaleInterval) {
-        if (scaleInterval < 0.0f) {
-            throw new IllegalArgumentException("ScaleInterval must be greater than or equal 0.0f.");
-        }
-        setting.scaleInterval = scaleInterval;
+    fun setTranslationInterval(@FloatRange(from = 0.0) translationInterval: Float) {
+        require(!(translationInterval < 0.0f)) { "TranslationInterval must be greater than or equal 0.0f" }
+        cardStackSetting.translationInterval = translationInterval
     }
 
-    public void setSwipeThreshold(@FloatRange(from = 0.0f, to = 1.0f) float swipeThreshold) {
-        if (swipeThreshold < 0.0f || 1.0f < swipeThreshold) {
-            throw new IllegalArgumentException("SwipeThreshold must be 0.0f to 1.0f.");
-        }
-        setting.swipeThreshold = swipeThreshold;
+    fun setScaleInterval(@FloatRange(from = 0.0) scaleInterval: Float) {
+        require(!(scaleInterval < 0.0f)) { "ScaleInterval must be greater than or equal 0.0f." }
+        cardStackSetting.scaleInterval = scaleInterval
     }
 
-    public void setMaxDegree(@FloatRange(from = -360.0f, to = 360.0f) float maxDegree) {
-        if (maxDegree < -360.0f || 360.0f < maxDegree) {
-            throw new IllegalArgumentException("MaxDegree must be -360.0f to 360.0f");
-        }
-        setting.maxDegree = maxDegree;
+    fun setSwipeThreshold(@FloatRange(from = 0.0, to = 1.0) swipeThreshold: Float) {
+        require(!(swipeThreshold < 0.0f || 1.0f < swipeThreshold)) { "SwipeThreshold must be 0.0f to 1.0f." }
+        cardStackSetting.swipeThreshold = swipeThreshold
     }
 
-    public void setDirections(@NonNull List<Direction> directions) {
-        setting.directions = directions;
+    fun setMaxDegree(@FloatRange(from = (-360.0f).toDouble(), to = 360.0) maxDegree: Float) {
+        require(!(maxDegree < -360.0f || 360.0f < maxDegree)) { "MaxDegree must be -360.0f to 360.0f" }
+        cardStackSetting.maxDegree = maxDegree
     }
 
-    public void setCanScrollHorizontal(boolean canScrollHorizontal) {
-        setting.canScrollHorizontal = canScrollHorizontal;
+    fun setDirections(directions: List<Direction>) {
+        cardStackSetting.directions = directions
     }
 
-    public void setCanScrollVertical(boolean canScrollVertical) {
-        setting.canScrollVertical = canScrollVertical;
+    fun setCanScrollHorizontal(canScrollHorizontal: Boolean) {
+        cardStackSetting.canScrollHorizontal = canScrollHorizontal
     }
 
-    public void setSwipeableMethod(SwipeableMethod swipeableMethod) {
-        setting.swipeableMethod = swipeableMethod;
+    fun setCanScrollVertical(canScrollVertical: Boolean) {
+        cardStackSetting.canScrollVertical = canScrollVertical
     }
 
-    public void setSwipeAnimationSetting(@NonNull SwipeAnimationSetting swipeAnimationSetting) {
-        setting.swipeAnimationSetting = swipeAnimationSetting;
+    fun setSwipeableMethod(swipeableMethod: SwipeableMethod) {
+        cardStackSetting.swipeableMethod = swipeableMethod
     }
 
-    public void setRewindAnimationSetting(@NonNull RewindAnimationSetting rewindAnimationSetting) {
-        setting.rewindAnimationSetting = rewindAnimationSetting;
+    fun setSwipeAnimationSetting(swipeAnimationSetting: SwipeAnimationSetting) {
+        cardStackSetting.swipeAnimationSetting = swipeAnimationSetting
     }
 
-    public void setOverlayInterpolator(@NonNull Interpolator overlayInterpolator) {
-        setting.overlayInterpolator = overlayInterpolator;
+    fun setRewindAnimationSetting(rewindAnimationSetting: RewindAnimationSetting) {
+        cardStackSetting.rewindAnimationSetting = rewindAnimationSetting
     }
 
+    fun setOverlayInterpolator(overlayInterpolator: Interpolator) {
+        cardStackSetting.overlayInterpolator = overlayInterpolator
+    }
 }

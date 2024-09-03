@@ -1,20 +1,21 @@
-package com.yuyakaido.android.cardstackview.internal;
+package com.yuyakaido.android.cardstackview.internal
 
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView
+import com.yuyakaido.android.cardstackview.Direction
+import kotlin.math.abs
+import kotlin.math.min
 
-import com.yuyakaido.android.cardstackview.Direction;
+class CardStackState {
+    var status: Status = Status.Idle
+    var width: Int = 0
+    var height: Int = 0
+    var dx: Int = 0
+    var dy: Int = 0
+    var topPosition: Int = 0
+    var targetPosition: Int = RecyclerView.NO_POSITION
+    var proportion: Float = 0.0f
 
-public class CardStackState {
-    public Status status = Status.Idle;
-    public int width = 0;
-    public int height = 0;
-    public int dx = 0;
-    public int dy = 0;
-    public int topPosition = 0;
-    public int targetPosition = RecyclerView.NO_POSITION;
-    public float proportion = 0.0f;
-
-    public enum Status {
+    enum class Status {
         Idle,
         Dragging,
         RewindAnimating,
@@ -23,87 +24,80 @@ public class CardStackState {
         ManualSwipeAnimating,
         ManualSwipeAnimated;
 
-        public boolean isBusy() {
-            return this != Idle;
-        }
+        val isBusy: Boolean
+            get() = this != Idle
 
-        public boolean isDragging() {
-            return this == Dragging;
-        }
+        val isDragging: Boolean
+            get() = this == Dragging
 
-        public boolean isSwipeAnimating() {
-            return this == ManualSwipeAnimating || this == AutomaticSwipeAnimating;
-        }
+        val isSwipeAnimating: Boolean
+            get() = this == ManualSwipeAnimating || this == AutomaticSwipeAnimating
 
-        public Status toAnimatedStatus() {
-            switch (this) {
-                case ManualSwipeAnimating:
-                    return ManualSwipeAnimated;
-                case AutomaticSwipeAnimating:
-                    return AutomaticSwipeAnimated;
-                default:
-                    return Idle;
+        fun toAnimatedStatus(): Status {
+            return when (this) {
+                ManualSwipeAnimating -> ManualSwipeAnimated
+                AutomaticSwipeAnimating -> AutomaticSwipeAnimated
+                else -> Idle
             }
         }
     }
 
-    public void next(Status state) {
-        this.status = state;
+    fun next(state: Status) {
+        this.status = state
     }
 
-    public Direction getDirection() {
-        if (Math.abs(dy) < Math.abs(dx)) {
+    val direction: Direction
+        get() = if (abs(dy.toDouble()) < abs(dx.toDouble())) {
             if (dx < 0.0f) {
-                return Direction.Left;
+                Direction.Left
             } else {
-                return Direction.Right;
+                Direction.Right
             }
         } else {
             if (dy < 0.0f) {
-                return Direction.Top;
+                Direction.Top
             } else {
-                return Direction.Bottom;
+                Direction.Bottom
             }
         }
-    }
 
-    public float getRatio() {
-        int absDx = Math.abs(dx);
-        int absDy = Math.abs(dy);
-        float ratio;
-        if (absDx < absDy) {
-            ratio = absDy / (height / 2.0f);
-        } else {
-            ratio = absDx / (width / 2.0f);
+    val ratio: Float
+        get() {
+            val absDx = abs(dx.toDouble()).toInt()
+            val absDy = abs(dy.toDouble()).toInt()
+            val ratio = if (absDx < absDy) {
+                absDy / (height / 2.0f)
+            } else {
+                absDx / (width / 2.0f)
+            }
+            return min(ratio.toDouble(), 1.0).toFloat()
         }
-        return Math.min(ratio, 1.0f);
-    }
 
-    public boolean isSwipeCompleted() {
-        if (status.isSwipeAnimating()) {
-            if (topPosition < targetPosition) {
-                if (width < Math.abs(dx) || height < Math.abs(dy)) {
-                    return true;
+    val isSwipeCompleted: Boolean
+        get() {
+            if (status.isSwipeAnimating) {
+                if (topPosition < targetPosition) {
+                    if (width < abs(dx.toDouble()) || height < abs(dy.toDouble())) {
+                        return true
+                    }
                 }
             }
+            return false
         }
-        return false;
-    }
 
-    public boolean canScrollToPosition(int position, int itemCount) {
+    fun canScrollToPosition(position: Int, itemCount: Int): Boolean {
         if (position == topPosition) {
-            return false;
+            return false
         }
         if (position < 0) {
-            return false;
+            return false
         }
         if (itemCount < position) {
-            return false;
+            return false
         }
-        if (status.isBusy()) {
-            return false;
+        if (status.isBusy) {
+            return false
         }
-        return true;
+        return true
     }
-
 }

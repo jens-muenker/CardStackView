@@ -1,67 +1,57 @@
-package com.yuyakaido.android.cardstackview.internal;
+package com.yuyakaido.android.cardstackview.internal
 
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
+import com.yuyakaido.android.cardstackview.CardStackLayoutManager
+import kotlin.math.min
 
-import com.yuyakaido.android.cardstackview.CardStackLayoutManager;
-
-public class CardStackDataObserver extends RecyclerView.AdapterDataObserver {
-
-    private final RecyclerView recyclerView;
-
-    public CardStackDataObserver(RecyclerView recyclerView) {
-        this.recyclerView = recyclerView;
+class CardStackDataObserver(private val recyclerView: RecyclerView) : AdapterDataObserver() {
+    override fun onChanged() {
+        val manager = cardStackLayoutManager
+        manager.topPosition = 0
     }
 
-    @Override
-    public void onChanged() {
-        CardStackLayoutManager manager = getCardStackLayoutManager();
-        manager.setTopPosition(0);
-    }
-
-    @Override
-    public void onItemRangeChanged(int positionStart, int itemCount) {
+    override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
         // Do nothing
     }
 
-    @Override
-    public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
+    override fun onItemRangeChanged(positionStart: Int, itemCount: Int, payload: Any?) {
         // Do nothing
     }
 
-    @Override
-    public void onItemRangeInserted(int positionStart, int itemCount) {
+    override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
         // Do nothing
     }
 
-    @Override
-    public void onItemRangeRemoved(int positionStart, int itemCount) {
-        // 要素が削除された場合はTopPositionの調整が必要になる場合がある
-        // 具体的には、要素が全て削除された場合と、TopPositionより前の要素が削除された場合は調整が必要
-        CardStackLayoutManager manager = getCardStackLayoutManager();
-        int topPosition = manager.getTopPosition();
-        if (manager.getItemCount() == 0) {
-            // 要素が全て削除された場合
-            manager.setTopPosition(0);
+    override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
+        // TopPosition may need to be adjusted if the element is deleted
+        // Specifically, if all elements are deleted, or if elements before
+        // TopPosition are deleted, adjustments are necessary
+        val manager = cardStackLayoutManager
+        val topPosition = manager.topPosition
+        if (manager.itemCount == 0) {
+            // If all elements are deleted
+            manager.topPosition = 0
         } else if (positionStart < topPosition) {
-            // TopPositionよりも前の要素が削除された場合
-            int diff = topPosition - positionStart;
-            manager.setTopPosition(Math.min(topPosition - diff, manager.getItemCount() - 1));
+            // If an element before TopPosition is deleted
+            val diff = topPosition - positionStart
+            manager.topPosition =
+                min((topPosition - diff).toDouble(), (manager.itemCount - 1).toDouble())
+                    .toInt()
         }
     }
 
-    @Override
-    public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-        CardStackLayoutManager manager = getCardStackLayoutManager();
-        manager.removeAllViews();
+    override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
+        val manager = cardStackLayoutManager
+        manager.removeAllViews()
     }
 
-    private CardStackLayoutManager getCardStackLayoutManager() {
-        RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
-        if (manager instanceof CardStackLayoutManager) {
-            return (CardStackLayoutManager) manager;
+    private val cardStackLayoutManager: CardStackLayoutManager
+        get() {
+            val manager = recyclerView.layoutManager
+            if (manager is CardStackLayoutManager) {
+                return manager
+            }
+            throw IllegalStateException("CardStackView must be set CardStackLayoutManager.")
         }
-        throw new IllegalStateException("CardStackView must be set CardStackLayoutManager.");
-    }
-
 }

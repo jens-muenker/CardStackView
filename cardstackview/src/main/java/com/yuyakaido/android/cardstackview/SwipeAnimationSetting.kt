@@ -1,68 +1,52 @@
-package com.yuyakaido.android.cardstackview;
+package com.yuyakaido.android.cardstackview
 
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.Interpolator;
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.Interpolator
+import com.yuyakaido.android.cardstackview.internal.AnimationSetting
 
-import com.yuyakaido.android.cardstackview.internal.AnimationSetting;
-
-public class SwipeAnimationSetting implements AnimationSetting {
-
-    private final Direction direction;
-    private final int duration;
-    private final Interpolator interpolator;
-
-    private SwipeAnimationSetting(
-            Direction direction,
-            int duration,
-            Interpolator interpolator
-    ) {
-        this.direction = direction;
-        this.duration = duration;
-        this.interpolator = interpolator;
+class SwipeAnimationSetting private constructor(
+    private val direction: Direction,
+    private val duration: Int,
+    private val interpolator: Interpolator
+) : AnimationSetting {
+    override fun getDirection(): Direction {
+        return direction
     }
 
-    @Override
-    public Direction getDirection() {
-        return direction;
+    override fun getDuration(): Int {
+        return duration
     }
 
-    @Override
-    public int getDuration() {
-        return duration;
+    override fun getInterpolator(): Interpolator {
+        return interpolator
     }
 
-    @Override
-    public Interpolator getInterpolator() {
-        return interpolator;
-    }
+    class Builder {
+        private var direction = Direction.Right
+        private var duration = Duration.Normal.duration
+        private var interpolator: Interpolator = AccelerateInterpolator()
 
-    public static class Builder {
-        private Direction direction = Direction.Right;
-        private int duration = Duration.Normal.duration;
-        private Interpolator interpolator = new AccelerateInterpolator();
-
-        public Builder setDirection(Direction direction) {
-            this.direction = direction;
-            return this;
+        fun setDirection(direction: Direction): Builder {
+            this.direction = direction
+            return this
         }
 
-        public Builder setDuration(int duration) {
-            this.duration = duration;
-            return this;
+        fun setDuration(duration: Int): Builder {
+            this.duration = duration
+            return this
         }
 
-        public Builder setInterpolator(Interpolator interpolator) {
-            this.interpolator = interpolator;
-            return this;
+        fun setInterpolator(interpolator: Interpolator): Builder {
+            this.interpolator = interpolator
+            return this
         }
 
-        public SwipeAnimationSetting build() {
-            return new SwipeAnimationSetting(
-                    direction,
-                    duration,
-                    interpolator
-            );
+        fun build(): SwipeAnimationSetting {
+            return SwipeAnimationSetting(
+                direction,
+                duration,
+                interpolator
+            )
         }
     }
-
 }

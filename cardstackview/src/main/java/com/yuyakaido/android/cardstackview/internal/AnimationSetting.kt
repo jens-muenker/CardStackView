@@ -1,11 +1,10 @@
-package com.yuyakaido.android.cardstackview.internal;
+package com.yuyakaido.android.cardstackview.internal
 
-import android.view.animation.Interpolator;
+import android.view.animation.Interpolator
+import com.yuyakaido.android.cardstackview.Direction
 
-import com.yuyakaido.android.cardstackview.Direction;
-
-public interface AnimationSetting {
-    Direction getDirection();
-    int getDuration();
-    Interpolator getInterpolator();
+interface AnimationSetting {
+    fun getDirection(): Direction?
+    fun getDuration(): Int
+    fun getInterpolator(): Interpolator?
 }

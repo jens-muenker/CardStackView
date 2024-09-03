@@ -1,20 +1,19 @@
-package com.yuyakaido.android.cardstackview;
+package com.yuyakaido.android.cardstackview
 
-public enum SwipeableMethod {
+enum class SwipeableMethod {
     AutomaticAndManual,
     Automatic,
-    Manual,
-    None;
+    Manual;
 
-    boolean canSwipe() {
-        return canSwipeAutomatically() || canSwipeManually();
+    fun canSwipe(): Boolean {
+        return canSwipeAutomatically() || canSwipeManually()
     }
 
-    boolean canSwipeAutomatically() {
-        return this == AutomaticAndManual || this == Automatic;
+    fun canSwipeAutomatically(): Boolean {
+        return this == AutomaticAndManual || this == Automatic
     }
 
-    boolean canSwipeManually() {
-        return this == AutomaticAndManual || this == Manual;
+    fun canSwipeManually(): Boolean {
+        return this == AutomaticAndManual || this == Manual
     }
 }

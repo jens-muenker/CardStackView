@@ -1,6 +1,6 @@
-package com.yuyakaido.android.cardstackview;
+package com.yuyakaido.android.cardstackview
 
-public enum StackFrom {
+enum class StackFrom {
     None,
     Top,
     TopAndLeft,

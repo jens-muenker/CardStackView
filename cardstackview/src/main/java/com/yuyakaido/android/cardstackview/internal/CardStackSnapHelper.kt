@@ -1,102 +1,99 @@
-package com.yuyakaido.android.cardstackview.internal;
+package com.yuyakaido.android.cardstackview.internal
 
-import android.view.View;
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SnapHelper
+import com.yuyakaido.android.cardstackview.CardStackLayoutManager
+import com.yuyakaido.android.cardstackview.Duration
+import com.yuyakaido.android.cardstackview.Duration.Companion.fromVelocity
+import com.yuyakaido.android.cardstackview.SwipeAnimationSetting
+import kotlin.math.abs
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SnapHelper;
+class CardStackSnapHelper : SnapHelper() {
+    private var velocityX = 0
+    private var velocityY = 0
 
-import com.yuyakaido.android.cardstackview.CardStackLayoutManager;
-import com.yuyakaido.android.cardstackview.Duration;
-import com.yuyakaido.android.cardstackview.SwipeAnimationSetting;
-
-public class CardStackSnapHelper extends SnapHelper {
-
-    private int velocityX = 0;
-    private int velocityY = 0;
-
-    @Nullable
-    @Override
-    public int[] calculateDistanceToFinalSnap(
-            @NonNull RecyclerView.LayoutManager layoutManager,
-            @NonNull View targetView
-    ) {
-        if (layoutManager instanceof CardStackLayoutManager) {
-            CardStackLayoutManager manager = (CardStackLayoutManager) layoutManager;
-            if (manager.findViewByPosition(manager.getTopPosition()) != null) {
-                int x = (int) targetView.getTranslationX();
-                int y = (int) targetView.getTranslationY();
+    override fun calculateDistanceToFinalSnap(
+        layoutManager: RecyclerView.LayoutManager,
+        targetView: View
+    ): IntArray {
+        if (layoutManager is CardStackLayoutManager) {
+            if (layoutManager.findViewByPosition(layoutManager.topPosition) != null) {
+                val x = targetView.translationX.toInt()
+                val y = targetView.translationY.toInt()
                 if (x != 0 || y != 0) {
-                    CardStackSetting setting = manager.getCardStackSetting();
-                    float horizontal = Math.abs(x) / (float) targetView.getWidth();
-                    float vertical = Math.abs(y) / (float) targetView.getHeight();
-                    Duration duration = Duration.fromVelocity(velocityY < velocityX ? velocityX : velocityY);
+                    val setting = layoutManager.cardStackSetting
+                    val horizontal = (abs(x.toDouble()) / targetView.width.toFloat()).toFloat()
+                    val vertical = (abs(y.toDouble()) / targetView.height.toFloat()).toFloat()
+                    val duration = fromVelocity(if (velocityY < velocityX) velocityX else velocityY)
                     if (duration == Duration.Fast || setting.swipeThreshold < horizontal || setting.swipeThreshold < vertical) {
-                        CardStackState state = manager.getCardStackState();
-                        if (setting.directions.contains(state.getDirection())) {
-                            state.targetPosition = state.topPosition + 1;
+                        val state = layoutManager.cardStackState
+                        if (setting.directions.contains(state.direction)) {
+                            state.targetPosition = state.topPosition + 1
 
-                            SwipeAnimationSetting swipeAnimationSetting = new SwipeAnimationSetting.Builder()
-                                    .setDirection(setting.swipeAnimationSetting.getDirection())
-                                    .setDuration(duration.duration)
-                                    .setInterpolator(setting.swipeAnimationSetting.getInterpolator())
-                                    .build();
-                            manager.setSwipeAnimationSetting(swipeAnimationSetting);
+                            val swipeAnimationSetting = SwipeAnimationSetting.Builder()
+                                .setDirection(setting.swipeAnimationSetting.getDirection())
+                                .setDuration(duration.duration)
+                                .setInterpolator(setting.swipeAnimationSetting.getInterpolator())
+                                .build()
+                            layoutManager.setSwipeAnimationSetting(swipeAnimationSetting)
 
-                            this.velocityX = 0;
-                            this.velocityY = 0;
+                            this.velocityX = 0
+                            this.velocityY = 0
 
-                            CardStackSmoothScroller scroller = new CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.ManualSwipe, manager);
-                            scroller.setTargetPosition(manager.getTopPosition());
-                            manager.startSmoothScroll(scroller);
+                            val scroller = CardStackSmoothScroller(
+                                CardStackSmoothScroller.ScrollType.ManualSwipe,
+                                layoutManager
+                            )
+                            scroller.targetPosition = layoutManager.topPosition
+                            layoutManager.startSmoothScroll(scroller)
                         } else {
-                            CardStackSmoothScroller scroller = new CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.ManualCancel, manager);
-                            scroller.setTargetPosition(manager.getTopPosition());
-                            manager.startSmoothScroll(scroller);
+                            val scroller = CardStackSmoothScroller(
+                                CardStackSmoothScroller.ScrollType.ManualCancel,
+                                layoutManager
+                            )
+                            scroller.targetPosition = layoutManager.topPosition
+                            layoutManager.startSmoothScroll(scroller)
                         }
                     } else {
-                        CardStackSmoothScroller scroller = new CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.ManualCancel, manager);
-                        scroller.setTargetPosition(manager.getTopPosition());
-                        manager.startSmoothScroll(scroller);
+                        val scroller = CardStackSmoothScroller(
+                            CardStackSmoothScroller.ScrollType.ManualCancel,
+                            layoutManager
+                        )
+                        scroller.targetPosition = layoutManager.topPosition
+                        layoutManager.startSmoothScroll(scroller)
                     }
                 }
             }
         }
-        return new int[2];
+        return IntArray(2)
     }
 
-    @Nullable
-    @Override
-    public View findSnapView(RecyclerView.LayoutManager layoutManager) {
-        if (layoutManager instanceof CardStackLayoutManager) {
-            CardStackLayoutManager manager = (CardStackLayoutManager) layoutManager;
-            View view = manager.findViewByPosition(manager.getTopPosition());
+    override fun findSnapView(layoutManager: RecyclerView.LayoutManager): View? {
+        if (layoutManager is CardStackLayoutManager) {
+            val view = layoutManager.findViewByPosition(layoutManager.topPosition)
             if (view != null) {
-                int x = (int) view.getTranslationX();
-                int y = (int) view.getTranslationY();
+                val x = view.translationX.toInt()
+                val y = view.translationY.toInt()
                 if (x == 0 && y == 0) {
-                    return null;
+                    return null
                 }
-                return view;
+                return view
             }
         }
-        return null;
+        return null
     }
 
-    @Override
-    public int findTargetSnapPosition(
-            RecyclerView.LayoutManager layoutManager,
-            int velocityX,
-            int velocityY
-    ) {
-        this.velocityX = Math.abs(velocityX);
-        this.velocityY = Math.abs(velocityY);
-        if (layoutManager instanceof CardStackLayoutManager) {
-            CardStackLayoutManager manager = (CardStackLayoutManager) layoutManager;
-            return manager.getTopPosition();
+    override fun findTargetSnapPosition(
+        layoutManager: RecyclerView.LayoutManager,
+        velocityX: Int,
+        velocityY: Int
+    ): Int {
+        this.velocityX = abs(velocityX.toDouble()).toInt()
+        this.velocityY = abs(velocityY.toDouble()).toInt()
+        if (layoutManager is CardStackLayoutManager) {
+            return layoutManager.topPosition
         }
-        return RecyclerView.NO_POSITION;
+        return RecyclerView.NO_POSITION
     }
-
 }

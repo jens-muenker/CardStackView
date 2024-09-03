@@ -1,27 +1,24 @@
-package com.yuyakaido.android.cardstackview;
+package com.yuyakaido.android.cardstackview
 
-import android.view.View;
+import android.view.View
 
-public interface CardStackListener {
-    void onCardDragging(Direction direction, float ratio);
-    void onCardSwiped(Direction direction);
-    void onCardRewound();
-    void onCardCanceled();
-    void onCardAppeared(View view, int position);
-    void onCardDisappeared(View view, int position);
+interface CardStackListener {
+    fun onCardDragging(direction: Direction?, ratio: Float)
+    fun onCardSwiped(direction: Direction?)
+    fun onCardRewound()
+    fun onCardCanceled()
+    fun onCardAppeared(view: View?, position: Int)
+    fun onCardDisappeared(view: View?, position: Int)
 
-    CardStackListener DEFAULT = new CardStackListener() {
-        @Override
-        public void onCardDragging(Direction direction, float ratio) {}
-        @Override
-        public void onCardSwiped(Direction direction) {}
-        @Override
-        public void onCardRewound() {}
-        @Override
-        public void onCardCanceled() {}
-        @Override
-        public void onCardAppeared(View view, int position) {}
-        @Override
-        public void onCardDisappeared(View view, int position) {}
-    };
+    companion object {
+        @JvmField
+        val DEFAULT: CardStackListener = object : CardStackListener {
+            override fun onCardDragging(direction: Direction?, ratio: Float) {}
+            override fun onCardSwiped(direction: Direction?) {}
+            override fun onCardRewound() {}
+            override fun onCardCanceled() {}
+            override fun onCardAppeared(view: View?, position: Int) {}
+            override fun onCardDisappeared(view: View?, position: Int) {}
+        }
+    }
 }

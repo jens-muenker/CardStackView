@@ -1,179 +1,144 @@
-package com.yuyakaido.android.cardstackview.internal;
+package com.yuyakaido.android.cardstackview.internal
 
-import android.view.View;
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.SmoothScroller
+import com.yuyakaido.android.cardstackview.CardStackLayoutManager
+import com.yuyakaido.android.cardstackview.Direction
 
-import com.yuyakaido.android.cardstackview.CardStackLayoutManager;
-import com.yuyakaido.android.cardstackview.CardStackListener;
-import com.yuyakaido.android.cardstackview.RewindAnimationSetting;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
-public class CardStackSmoothScroller extends RecyclerView.SmoothScroller {
-
-    public enum ScrollType {
+class CardStackSmoothScroller(
+    private val type: ScrollType,
+    private val manager: CardStackLayoutManager
+) : SmoothScroller() {
+    enum class ScrollType {
         AutomaticSwipe,
         AutomaticRewind,
         ManualSwipe,
         ManualCancel
     }
 
-    private ScrollType type;
-    private CardStackLayoutManager manager;
-
-    public CardStackSmoothScroller(
-            ScrollType type,
-            CardStackLayoutManager manager
-    ) {
-        this.type = type;
-        this.manager = manager;
-    }
-
-    @Override
-    protected void onSeekTargetStep(
-            int dx,
-            int dy,
-            @NonNull RecyclerView.State state,
-            @NonNull Action action
+    override fun onSeekTargetStep(
+        dx: Int,
+        dy: Int,
+        state: RecyclerView.State,
+        action: Action
     ) {
         if (type == ScrollType.AutomaticRewind) {
-            RewindAnimationSetting setting = manager.getCardStackSetting().rewindAnimationSetting;
+            val setting = manager.cardStackSetting.rewindAnimationSetting
             action.update(
+                -getDx(setting),
+                -getDy(setting),
+                setting.getDuration(),
+                setting.getInterpolator()
+            )
+        }
+    }
+
+    override fun onTargetFound(
+        targetView: View,
+        state: RecyclerView.State,
+        action: Action
+    ) {
+        val x = targetView.translationX.toInt()
+        val y = targetView.translationY.toInt()
+        val setting: AnimationSetting
+        when (type) {
+            ScrollType.AutomaticSwipe -> {
+                setting = manager.cardStackSetting.swipeAnimationSetting
+                action.update(
                     -getDx(setting),
                     -getDy(setting),
                     setting.getDuration(),
                     setting.getInterpolator()
-            );
-        }
-    }
+                )
+            }
 
-    @Override
-    protected void onTargetFound(
-            @NonNull View targetView,
-            @NonNull RecyclerView.State state,
-            @NonNull Action action
-    ) {
-        int x = (int) targetView.getTranslationX();
-        int y = (int) targetView.getTranslationY();
-        AnimationSetting setting;
-        switch (type) {
-            case AutomaticSwipe:
-                setting = manager.getCardStackSetting().swipeAnimationSetting;
+            ScrollType.AutomaticRewind -> {
+                setting = manager.cardStackSetting.rewindAnimationSetting
                 action.update(
-                        -getDx(setting),
-                        -getDy(setting),
-                        setting.getDuration(),
-                        setting.getInterpolator()
-                );
-                break;
-            case AutomaticRewind:
-                setting = manager.getCardStackSetting().rewindAnimationSetting;
+                    x,
+                    y,
+                    setting.getDuration(),
+                    setting.getInterpolator()
+                )
+            }
+
+            ScrollType.ManualSwipe -> {
+                val dx = -x * 10
+                val dy = -y * 10
+                setting = manager.cardStackSetting.swipeAnimationSetting
                 action.update(
-                        x,
-                        y,
-                        setting.getDuration(),
-                        setting.getInterpolator()
-                );
-                break;
-            case ManualSwipe:
-                int dx = -x * 10;
-                int dy = -y * 10;
-                setting = manager.getCardStackSetting().swipeAnimationSetting;
+                    dx,
+                    dy,
+                    setting.getDuration(),
+                    setting.getInterpolator()
+                )
+            }
+
+            ScrollType.ManualCancel -> {
+                setting = manager.cardStackSetting.rewindAnimationSetting
                 action.update(
-                        dx,
-                        dy,
-                        setting.getDuration(),
-                        setting.getInterpolator()
-                );
-                break;
-            case ManualCancel:
-                setting = manager.getCardStackSetting().rewindAnimationSetting;
-                action.update(
-                        x,
-                        y,
-                        setting.getDuration(),
-                        setting.getInterpolator()
-                );
-                break;
+                    x,
+                    y,
+                    setting.getDuration(),
+                    setting.getInterpolator()
+                )
+            }
         }
     }
 
-    @Override
-    protected void onStart() {
-        CardStackListener listener = manager.getCardStackListener();
-        CardStackState state = manager.getCardStackState();
-        switch (type) {
-            case AutomaticSwipe:
-                state.next(CardStackState.Status.AutomaticSwipeAnimating);
-                listener.onCardDisappeared(manager.getTopView(), manager.getTopPosition());
-                break;
-            case AutomaticRewind:
-                state.next(CardStackState.Status.RewindAnimating);
-                break;
-            case ManualSwipe:
-                state.next(CardStackState.Status.ManualSwipeAnimating);
-                listener.onCardDisappeared(manager.getTopView(), manager.getTopPosition());
-                break;
-            case ManualCancel:
-                state.next(CardStackState.Status.RewindAnimating);
-                break;
+    override fun onStart() {
+        val listener = manager.cardStackListener
+        val state = manager.cardStackState
+        when (type) {
+            ScrollType.AutomaticSwipe -> {
+                state.next(CardStackState.Status.AutomaticSwipeAnimating)
+                listener.onCardDisappeared(manager.topView, manager.topPosition)
+            }
+
+            ScrollType.AutomaticRewind -> state.next(CardStackState.Status.RewindAnimating)
+            ScrollType.ManualSwipe -> {
+                state.next(CardStackState.Status.ManualSwipeAnimating)
+                listener.onCardDisappeared(manager.topView, manager.topPosition)
+            }
+
+            ScrollType.ManualCancel -> state.next(CardStackState.Status.RewindAnimating)
         }
     }
 
-    @Override
-    protected void onStop() {
-        CardStackListener listener = manager.getCardStackListener();
-        switch (type) {
-            case AutomaticSwipe:
-                // Notify callback from CardStackLayoutManager
-                break;
-            case AutomaticRewind:
-                listener.onCardRewound();
-                listener.onCardAppeared(manager.getTopView(), manager.getTopPosition());
-                break;
-            case ManualSwipe:
-                // Notify callback from CardStackLayoutManager
-                break;
-            case ManualCancel:
-                listener.onCardCanceled();
-                break;
+    override fun onStop() {
+        val listener = manager.cardStackListener
+        when (type) {
+            ScrollType.AutomaticSwipe -> {}
+            ScrollType.AutomaticRewind -> {
+                listener.onCardRewound()
+                listener.onCardAppeared(manager.topView, manager.topPosition)
+            }
+
+            ScrollType.ManualSwipe -> {}
+            ScrollType.ManualCancel -> listener.onCardCanceled()
         }
     }
 
-    private int getDx(AnimationSetting setting) {
-        CardStackState state = manager.getCardStackState();
-        int dx = 0;
-        switch (setting.getDirection()) {
-            case Left:
-                dx = -state.width * 2;
-                break;
-            case Right:
-                dx = state.width * 2;
-                break;
-            case Top:
-            case Bottom:
-                dx = 0;
-                break;
+    private fun getDx(setting: AnimationSetting): Int {
+        val state = manager.cardStackState
+        val dx = when (setting.getDirection()) {
+            Direction.Left -> -state.width * 2
+            Direction.Right -> state.width * 2
+            Direction.Top, Direction.Bottom -> 0
+            null -> 0
         }
-        return dx;
+        return dx
     }
 
-    private int getDy(AnimationSetting setting) {
-        CardStackState state = manager.getCardStackState();
-        int dy = 0;
-        switch (setting.getDirection()) {
-            case Left:
-            case Right:
-                dy = state.height / 4;
-                break;
-            case Top:
-                dy = -state.height * 2;
-                break;
-            case Bottom:
-                dy = state.height * 2;
-                break;
+    private fun getDy(setting: AnimationSetting): Int {
+        val state = manager.cardStackState
+        val dy: Int = when (setting.getDirection()) {
+            Direction.Left, Direction.Right -> state.height / 4
+            Direction.Top -> -state.height * 2
+            Direction.Bottom -> state.height * 2
+            null -> 0
         }
-        return dy;
+        return dy
     }
-
 }

@@ -1,68 +1,52 @@
-package com.yuyakaido.android.cardstackview;
+package com.yuyakaido.android.cardstackview
 
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Interpolator;
+import android.view.animation.DecelerateInterpolator
+import android.view.animation.Interpolator
+import com.yuyakaido.android.cardstackview.internal.AnimationSetting
 
-import com.yuyakaido.android.cardstackview.internal.AnimationSetting;
-
-public class RewindAnimationSetting implements AnimationSetting {
-
-    private final Direction direction;
-    private final int duration;
-    private final Interpolator interpolator;
-
-    private RewindAnimationSetting(
-            Direction direction,
-            int duration,
-            Interpolator interpolator
-    ) {
-        this.direction = direction;
-        this.duration = duration;
-        this.interpolator = interpolator;
+class RewindAnimationSetting private constructor(
+    private val direction: Direction,
+    private val duration: Int,
+    private val interpolator: Interpolator
+) : AnimationSetting {
+    override fun getDirection(): Direction {
+        return direction
     }
 
-    @Override
-    public Direction getDirection() {
-        return direction;
+    override fun getDuration(): Int {
+        return duration
     }
 
-    @Override
-    public int getDuration() {
-        return duration;
+    override fun getInterpolator(): Interpolator {
+        return interpolator
     }
 
-    @Override
-    public Interpolator getInterpolator() {
-        return interpolator;
-    }
+    class Builder {
+        private var direction = Direction.Bottom
+        private var duration = Duration.Normal.duration
+        private var interpolator: Interpolator = DecelerateInterpolator()
 
-    public static class Builder {
-        private Direction direction = Direction.Bottom;
-        private int duration = Duration.Normal.duration;
-        private Interpolator interpolator = new DecelerateInterpolator();
-
-        public RewindAnimationSetting.Builder setDirection(Direction direction) {
-            this.direction = direction;
-            return this;
+        fun setDirection(direction: Direction): Builder {
+            this.direction = direction
+            return this
         }
 
-        public RewindAnimationSetting.Builder setDuration(int duration) {
-            this.duration = duration;
-            return this;
+        fun setDuration(duration: Int): Builder {
+            this.duration = duration
+            return this
         }
 
-        public RewindAnimationSetting.Builder setInterpolator(Interpolator interpolator) {
-            this.interpolator = interpolator;
-            return this;
+        fun setInterpolator(interpolator: Interpolator): Builder {
+            this.interpolator = interpolator
+            return this
         }
 
-        public RewindAnimationSetting build() {
-            return new RewindAnimationSetting(
-                    direction,
-                    duration,
-                    interpolator
-            );
+        fun build(): RewindAnimationSetting {
+            return RewindAnimationSetting(
+                direction,
+                duration,
+                interpolator
+            )
         }
     }
-
 }
