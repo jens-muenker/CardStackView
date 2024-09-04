@@ -300,7 +300,7 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 
 **3.0.0**
 - updated to newest gradle version
-- updated libarys to newest versions
+- updated libraries to newest versions
 - translated code to kotlin
 
 # License
