@@ -1,45 +1,33 @@
 ![Logo](https://github.com/yuyakaido/images/blob/master/CardStackView/sample-logo.png)
 
-# CardStackView
-
-![Platform](http://img.shields.io/badge/platform-android-blue.svg?style=flat)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=14)
-[![AndroidArsenal](https://img.shields.io/badge/Android%20Arsenal-CardStackView-blue.svg?style=flat)](https://android-arsenal.com/details/1/6075)
-[![CircleCI](https://circleci.com/gh/yuyakaido/CardStackView.svg?style=svg)](https://circleci.com/gh/yuyakaido/CardStackView)
+[![](https://jitpack.io/v/jens-muenker/CardStackView.svg)](https://jitpack.io/#jens-muenker/CardStackView) [![](https://jitpack.io/v/jens-muenker/CardStackView/month.svg)](https://jitpack.io/#jens-muenker/CardStackView)
 
 # Overview
 
-![Overview](https://github.com/yuyakaido/images/blob/master/CardStackView/sample-overview.gif)
+This repository is a fork of <a href="https://github.com/yuyakaido/CardStackView">CardStackView</a>. I fixed some bugs, updated the dependencies and gradle, and converted the code to Kotlin. In addition, in the changelogs you can see all other features I added.
 
-# Contents
+![Example](https://github.com/yuyakaido/images/blob/master/CardStackView/sample-overview.gif)
 
-- [Setup](#setup)
-- [Features](#features)
-    - [Manual Swipe](#manual-swipe)
-    - [Automatic Swipe](#automatic-swipe)
-    - [Cancel](#cancel)
-    - [Rewind](#rewind)
-    - [Overlay View](#overlay-view)
-    - [Overlay Interpolator](#overlay-interpolator)
-    - [Paging](#paging)
-    - [Reloading](#reloading)
-    - [Stack From](#stack-from)
-    - [Visible Count](#visible-count)
-    - [Translation Interval](#translation-interval)
-    - [Scale Interval](#scale-interval)
-    - [Swipe Threshold](#swipe-threshold)
-    - [Max Degree](#max-degree)
-    - [Swipe Direction](#swipe-direction)
-    - [Swipe Restriction](#swipe-restriction)
-    - [Swipeable Method](#swipeable-method)
-- [Public Interfaces](#public-interfaces)
-- [Callbacks](#callbacks)
-- [Migration Guide](#migration-guide)
-- [Installation](#installation)
-- [License](#license)
+# Usage
 
-# Setup
+1. Include the library as a local library project in your build.gradle:
+
+    ```
+	allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+	
+	...
+	
+	dependencies {
+	        implementation 'com.github.jens-muenker:CardStackView:3.0.0'
+	}
+    ```
+
+2. Use it in code:
 
 ```kotlin
 val cardStackView = findViewById<CardStackView>(R.id.card_stack_view)
@@ -297,39 +285,32 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 | CardStackListener.onCardAppeared(View view, int position) | This method is called when the card appeared. |
 | CardStackListener.onCardDisappeared(View view, int position) | This method is called when the card disappeared. |
 
-# Migration Guide
+# Changelog
 
-## Migration of Features
-
-| 1.x | 2.x |
-| :---- | :---- |
-| Move to Origin | [Cancel](#cancel) |
-| Reverse | [Rewind](#rewind) |
-| ElevationEnabled | [Stack From](#stack-from) |
-| TranslationDiff | [Translation Interval](#translation-interval) |
-| ScaleDiff | [Scale Interval](#scale-interval) |
-| SwipeEnabled | [Swipe Restriction](#swipe-restriction) |
-
-## Migration of Callbacks
-
-| 1.x | 2.x |
-| :---- | :---- |
-| CardStackView.CardEventListener | CardStackListener |
-| onCardDragging(float percentX, float percentY) | onCardDragging(Direction direction, float ratio) |
-| onCardSwiped(SwipeDirection direction) | onCardSwiped(Direction direction) |
-| onCardReversed() | onCardRewound() |
-| onCardMovedToOrigin() | onCardCanceled() |
-| onCardClicked(int index) | This method is no longer provided. Please implement in your item of RecyclerView. |
-
-# Installation
-
-```groovy
-dependencies {
-    implementation "com.yuyakaido.android:card-stack-view:2.3.4"
-}
-```
+**3.0.0** - Based on <a href="https://github.com/krokyze/uCrop-n-Edit">uCrop'n'Edit</a> 2.2.8 and <a href="https://github.com/Yalantis/uCrop">uCrop</a> 2.2.8:
+- updated to newest gradle version
+- updated libarys to newest versions
+- translated code to kotlin
 
 # License
+
+This software is licensed under the Apache License, Version 2.0. See the <a href="https://www.apache.org/licenses/LICENSE-2.0">LICENSE</a> file for details.
+
+    Copyright 2024, Jens Münker
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+For <a href="https://github.com/yuyakaido/CardStackView">CardStackView</a>:
 
 ```
 Copyright 2018 yuyakaido
