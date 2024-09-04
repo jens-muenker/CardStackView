@@ -298,7 +298,7 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 
 # Changelog
 
-**3.0.0** - Based on <a href="https://github.com/krokyze/uCrop-n-Edit">uCrop'n'Edit</a> 2.2.8 and <a href="https://github.com/Yalantis/uCrop">uCrop</a> 2.2.8:
+**3.0.0**
 - updated to newest gradle version
 - updated libarys to newest versions
 - translated code to kotlin
