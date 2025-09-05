@@ -180,9 +180,8 @@ class MainActivity : AppCompatActivity(), CardStackListener {
 
     private fun addFirst(size: Int) {
         val old = adapter.getSpots()
-        val new = mutableListOf<Spot>().apply {
-            addAll(old)
-            for (i in 0 until size) {
+        val new = old.toMutableList().apply {
+            repeat(size) {
                 add(manager.topPosition, createSpot())
             }
         }
@@ -194,10 +193,7 @@ class MainActivity : AppCompatActivity(), CardStackListener {
 
     private fun addLast(size: Int) {
         val old = adapter.getSpots()
-        val new = mutableListOf<Spot>().apply {
-            addAll(old)
-            addAll(List(size) { createSpot() })
-        }
+        val new = old + List(size) { createSpot() }
         val callback = SpotDiffCallback(old, new)
         val result = DiffUtil.calculateDiff(callback)
         adapter.setSpots(new)
@@ -205,14 +201,11 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     }
 
     private fun removeFirst(size: Int) {
-        if (adapter.getSpots().isEmpty()) {
-            return
-        }
+        if (adapter.getSpots().isEmpty()) return
 
         val old = adapter.getSpots()
-        val new = mutableListOf<Spot>().apply {
-            addAll(old)
-            for (i in 0 until size) {
+        val new = old.toMutableList().apply {
+            repeat(size) {
                 removeAt(manager.topPosition)
             }
         }
@@ -223,15 +216,12 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     }
 
     private fun removeLast(size: Int) {
-        if (adapter.getSpots().isEmpty()) {
-            return
-        }
+        if (adapter.getSpots().isEmpty()) return
 
         val old = adapter.getSpots()
-        val new = mutableListOf<Spot>().apply {
-            addAll(old)
-            for (i in 0 until size) {
-                removeAt(this.size - 1)
+        val new = old.toMutableList().apply {
+            repeat(size) {
+                removeAt(lastIndex)
             }
         }
         val callback = SpotDiffCallback(old, new)
@@ -242,8 +232,7 @@ class MainActivity : AppCompatActivity(), CardStackListener {
 
     private fun replace() {
         val old = adapter.getSpots()
-        val new = mutableListOf<Spot>().apply {
-            addAll(old)
+        val new = old.toMutableList().apply {
             removeAt(manager.topPosition)
             add(manager.topPosition, createSpot())
         }
@@ -253,10 +242,9 @@ class MainActivity : AppCompatActivity(), CardStackListener {
 
     private fun swap() {
         val old = adapter.getSpots()
-        val new = mutableListOf<Spot>().apply {
-            addAll(old)
+        val new = old.toMutableList().apply {
             val first = removeAt(manager.topPosition)
-            val last = removeAt(this.size - 1)
+            val last = removeAt(lastIndex)
             add(manager.topPosition, last)
             add(first)
         }
@@ -274,19 +262,17 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         )
     }
 
-    private fun createSpots(): List<Spot> {
-        val spots = ArrayList<Spot>()
-        spots.add(Spot(name = "Yasaka Shrine", city = "Kyoto", url = "https://images.unsplash.com/photo-1713346642924-fdda99d45870"))
-        spots.add(Spot(name = "Fushimi Inari Shrine", city = "Kyoto", url = "https://images.unsplash.com/photo-1542767673-ee5103fedbb1"))
-        spots.add(Spot(name = "Bamboo Forest", city = "Kyoto", url = "https://images.unsplash.com/photo-1531021713651-fdd4ac075ac1"))
-        spots.add(Spot(name = "Brooklyn Bridge", city = "New York", url = "https://images.unsplash.com/photo-1585163435462-7e7796fa4b9e"))
-        spots.add(Spot(name = "Empire State Building", city = "New York", url = "https://images.unsplash.com/photo-1663052721527-0d971e81d257"))
-        spots.add(Spot(name = "The statue of Liberty", city = "New York", url = "https://images.unsplash.com/photo-1670821911205-00c0d9582b92"))
-        spots.add(Spot(name = "Louvre Museum", city = "Paris", url = "https://images.unsplash.com/photo-1555929940-b435de81524e"))
-        spots.add(Spot(name = "Eiffel Tower", city = "Paris", url = "https://images.unsplash.com/photo-1609971757431-439cf7b4141b"))
-        spots.add(Spot(name = "Big Ben", city = "London", url = "https://images.unsplash.com/photo-1454793147212-9e7e57e89a4f"))
-        spots.add(Spot(name = "Great Wall of China", city = "China", url = "https://images.unsplash.com/photo-1558981017-9c65fb6f2530"))
-        return spots
-    }
+    private fun createSpots(): List<Spot> = listOf(
+        Spot(name = "Yasaka Shrine", city = "Kyoto", url = "https://images.unsplash.com/photo-1713346642924-fdda99d45870"),
+        Spot(name = "Fushimi Inari Shrine", city = "Kyoto", url = "https://images.unsplash.com/photo-1542767673-ee5103fedbb1"),
+        Spot(name = "Bamboo Forest", city = "Kyoto", url = "https://images.unsplash.com/photo-1531021713651-fdd4ac075ac1"),
+        Spot(name = "Brooklyn Bridge", city = "New York", url = "https://images.unsplash.com/photo-1585163435462-7e7796fa4b9e"),
+        Spot(name = "Empire State Building", city = "New York", url = "https://images.unsplash.com/photo-1663052721527-0d971e81d257"),
+        Spot(name = "The statue of Liberty", city = "New York", url = "https://images.unsplash.com/photo-1670821911205-00c0d9582b92"),
+        Spot(name = "Louvre Museum", city = "Paris", url = "https://images.unsplash.com/photo-1555929940-b435de81524e"),
+        Spot(name = "Eiffel Tower", city = "Paris", url = "https://images.unsplash.com/photo-1609971757431-439cf7b4141b"),
+        Spot(name = "Big Ben", city = "London", url = "https://images.unsplash.com/photo-1454793147212-9e7e57e89a4f"),
+        Spot(name = "Great Wall of China", city = "China", url = "https://images.unsplash.com/photo-1558981017-9c65fb6f2530")
+    )
 
 }

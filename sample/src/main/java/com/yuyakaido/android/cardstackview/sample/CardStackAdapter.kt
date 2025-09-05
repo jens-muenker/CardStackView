@@ -23,24 +23,20 @@ class CardStackAdapter(
         holder.name.text = "${spot.id}. ${spot.name}"
         holder.city.text = spot.city
         Glide.with(holder.image)
-                .load(spot.url)
-                .into(holder.image)
-        holder.itemView.setOnClickListener { v ->
-            Toast.makeText(v.context, spot.name, Toast.LENGTH_SHORT).show()
+            .load(spot.url)
+            .into(holder.image)
+        holder.itemView.setOnClickListener { view ->
+            Toast.makeText(view.context, spot.name, Toast.LENGTH_SHORT).show()
         }
     }
 
-    override fun getItemCount(): Int {
-        return spots.size
-    }
+    override fun getItemCount(): Int = spots.size
 
     fun setSpots(spots: List<Spot>) {
         this.spots = spots
     }
 
-    fun getSpots(): List<Spot> {
-        return spots
-    }
+    fun getSpots(): List<Spot> = spots
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.item_name)

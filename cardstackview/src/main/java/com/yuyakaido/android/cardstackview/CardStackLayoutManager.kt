@@ -3,6 +3,7 @@ package com.yuyakaido.android.cardstackview
 import android.content.Context
 import android.graphics.PointF
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -272,13 +273,12 @@ class CardStackLayoutManager
              *         at com.android.internal.os.Zygote$MethodAndArgsCaller.run(Zygote.java:240)
              *         at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:767)
              */
-            Handler().post(object : Runnable {
-                override fun run() {
-                    cardStackListener.onCardSwiped(direction)
-                    val topView: View = topView ?: return
-                    cardStackListener.onCardAppeared(topView, cardStackState.topPosition)
+            Handler(Looper.getMainLooper()).post {
+                cardStackListener.onCardSwiped(direction)
+                topView?.let { view ->
+                    cardStackListener.onCardAppeared(view, cardStackState.topPosition)
                 }
-            })
+            }
         }
 
         detachAndScrapAttachedViews(recycler)
@@ -406,61 +406,34 @@ class CardStackLayoutManager
     }
 
     private fun updateOverlay(view: View) {
-        val leftOverlay = view.findViewById<View>(R.id.left_overlay)
-        if (leftOverlay != null) {
-            leftOverlay.alpha = 0.0f
-        }
-        val rightOverlay = view.findViewById<View>(R.id.right_overlay)
-        if (rightOverlay != null) {
-            rightOverlay.alpha = 0.0f
-        }
-        val topOverlay = view.findViewById<View>(R.id.top_overlay)
-        if (topOverlay != null) {
-            topOverlay.alpha = 0.0f
-        }
-        val bottomOverlay = view.findViewById<View>(R.id.bottom_overlay)
-        if (bottomOverlay != null) {
-            bottomOverlay.alpha = 0.0f
-        }
-        val direction = cardStackState.direction
-        val alpha = cardStackSetting.overlayInterpolator.getInterpolation(
-            cardStackState.ratio
+        val overlays = mapOf(
+            R.id.left_overlay to Direction.Left,
+            R.id.right_overlay to Direction.Right,
+            R.id.top_overlay to Direction.Top,
+            R.id.bottom_overlay to Direction.Bottom
         )
-        when (direction) {
-            Direction.Left -> if (leftOverlay != null) {
-                leftOverlay.alpha = alpha
-            }
-
-            Direction.Right -> if (rightOverlay != null) {
-                rightOverlay.alpha = alpha
-            }
-
-            Direction.Top -> if (topOverlay != null) {
-                topOverlay.alpha = alpha
-            }
-
-            Direction.Bottom -> if (bottomOverlay != null) {
-                bottomOverlay.alpha = alpha
-            }
+        
+        // Reset all overlays
+        overlays.keys.forEach { id ->
+            view.findViewById<View>(id)?.alpha = 0.0f
+        }
+        
+        val direction = cardStackState.direction
+        val alpha = cardStackSetting.overlayInterpolator.getInterpolation(cardStackState.ratio)
+        
+        overlays[direction]?.let { overlayId ->
+            view.findViewById<View>(overlayId)?.alpha = alpha
         }
     }
 
     private fun resetOverlay(view: View) {
-        val leftOverlay = view.findViewById<View>(R.id.left_overlay)
-        if (leftOverlay != null) {
-            leftOverlay.alpha = 0.0f
-        }
-        val rightOverlay = view.findViewById<View>(R.id.right_overlay)
-        if (rightOverlay != null) {
-            rightOverlay.alpha = 0.0f
-        }
-        val topOverlay = view.findViewById<View>(R.id.top_overlay)
-        if (topOverlay != null) {
-            topOverlay.alpha = 0.0f
-        }
-        val bottomOverlay = view.findViewById<View>(R.id.bottom_overlay)
-        if (bottomOverlay != null) {
-            bottomOverlay.alpha = 0.0f
+        listOf(
+            R.id.left_overlay,
+            R.id.right_overlay,
+            R.id.top_overlay,
+            R.id.bottom_overlay
+        ).forEach { id ->
+            view.findViewById<View>(id)?.alpha = 0.0f
         }
     }
 
