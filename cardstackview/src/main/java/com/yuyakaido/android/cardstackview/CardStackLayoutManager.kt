@@ -95,9 +95,6 @@ class CardStackLayoutManager
 
             CardStackState.Status.ManualSwipeAnimated -> {}
 
-            null -> {
-                Log.e("CardStackLayoutManager", "status is null")
-            }
         }
         return 0
     }
@@ -141,9 +138,6 @@ class CardStackLayoutManager
 
             CardStackState.Status.ManualSwipeAnimated -> {}
 
-            null -> {
-                Log.e("CardStackLayoutManager", "status is null")
-            }
         }
         return 0
     }
@@ -203,7 +197,7 @@ class CardStackLayoutManager
         }
     }
 
-    fun updateProportion(x: Float, y: Float) {
+    fun updateProportion(y: Float) {
         if (topPosition < itemCount) {
             val view = findViewByPosition(topPosition)
             if (view != null) {

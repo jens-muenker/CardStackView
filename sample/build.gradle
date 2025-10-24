@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    compileSdk 36
+    compileSdk = 36
 
     defaultConfig {
         applicationId "com.yuyakaido.android.cardstackview.sample"
@@ -14,14 +14,14 @@ android {
 
     namespace 'com.yuyakaido.android.cardstackview.sample'
 
-                compileOptions {
-                sourceCompatibility JavaVersion.VERSION_21
-                targetCompatibility JavaVersion.VERSION_21
-            }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
 
-            kotlinOptions {
-                jvmTarget = '21'
-            }
+    kotlinOptions {
+        jvmTarget = '21'
+    }
 }
 
 java {
@@ -34,14 +34,14 @@ dependencies {
     implementation project(':cardstackview')
 
     // Kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.20"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.2.20"
 
-                // Image Loading
-            implementation "com.github.bumptech.glide:glide:4.16.0"
+    // Image Loading
+    implementation "com.github.bumptech.glide:glide:5.0.5"
 
     // Support Library
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.13.0'
 }
