@@ -407,14 +407,19 @@ class CardStackLayoutManager
 
     private fun updateOverlay(view: View) {
         val overlays = mapOf(
-            R.id.left_overlay to Direction.Left,
-            R.id.right_overlay to Direction.Right,
-            R.id.top_overlay to Direction.Top,
-            R.id.bottom_overlay to Direction.Bottom
+            Direction.Left to R.id.left_overlay,
+            Direction.Right to R.id.right_overlay,
+            Direction.Top to R.id.top_overlay,
+            Direction.Bottom to R.id.bottom_overlay
         )
         
         // Reset all overlays
-        overlays.keys.forEach { id ->
+        listOf(
+            R.id.left_overlay,
+            R.id.right_overlay,
+            R.id.top_overlay,
+            R.id.bottom_overlay
+        ).forEach { id ->
             view.findViewById<View>(id)?.alpha = 0.0f
         }
         
