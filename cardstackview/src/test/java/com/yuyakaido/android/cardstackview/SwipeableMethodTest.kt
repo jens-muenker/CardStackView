@@ -20,26 +20,25 @@ class SwipeableMethodTest {
     }
 
     @Test
-    fun `ManualAndAutomatic should allow both manual and automatic swiping`() {
-        assertTrue(SwipeableMethod.ManualAndAutomatic.canSwipeManually())
-        assertTrue(SwipeableMethod.ManualAndAutomatic.canSwipeAutomatically())
-        assertTrue(SwipeableMethod.ManualAndAutomatic.canSwipe())
+    fun `AutomaticAndManual should allow both manual and automatic swiping`() {
+        assertTrue(SwipeableMethod.AutomaticAndManual.canSwipeManually())
+        assertTrue(SwipeableMethod.AutomaticAndManual.canSwipeAutomatically())
+        assertTrue(SwipeableMethod.AutomaticAndManual.canSwipe())
     }
 
     @Test
-    fun `None should not allow any swiping`() {
-        assertFalse(SwipeableMethod.None.canSwipeManually())
-        assertFalse(SwipeableMethod.None.canSwipeAutomatically())
-        assertFalse(SwipeableMethod.None.canSwipe())
+    fun `Manual should allow only manual swiping`() {
+        assertTrue(SwipeableMethod.Manual.canSwipeManually())
+        assertFalse(SwipeableMethod.Manual.canSwipeAutomatically())
+        assertTrue(SwipeableMethod.Manual.canSwipe())
     }
 
     @Test
     fun `enum values should be correct`() {
         val values = SwipeableMethod.values()
-        assertEquals(4, values.size)
+        assertEquals(3, values.size)
         assertTrue(values.contains(SwipeableMethod.Manual))
         assertTrue(values.contains(SwipeableMethod.Automatic))
-        assertTrue(values.contains(SwipeableMethod.ManualAndAutomatic))
-        assertTrue(values.contains(SwipeableMethod.None))
+        assertTrue(values.contains(SwipeableMethod.AutomaticAndManual))
     }
 }

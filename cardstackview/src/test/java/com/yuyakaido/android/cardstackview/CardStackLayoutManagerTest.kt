@@ -61,8 +61,9 @@ class CardStackLayoutManagerTest {
         assertFalse(layoutManager.canScrollHorizontally())
         
         layoutManager.cardStackSetting.canScrollHorizontal = true
-        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.None
-        assertFalse(layoutManager.canScrollHorizontally())
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Automatic
+        // With Automatic method, horizontal scrolling is still possible
+        assertTrue(layoutManager.canScrollHorizontally())
     }
 
     @Test
@@ -76,8 +77,9 @@ class CardStackLayoutManagerTest {
         assertFalse(layoutManager.canScrollVertically())
         
         layoutManager.cardStackSetting.canScrollVertical = true
-        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.None
-        assertFalse(layoutManager.canScrollVertically())
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Automatic
+        // With Automatic method, vertical scrolling is still possible
+        assertTrue(layoutManager.canScrollVertically())
     }
 
     @Test
@@ -111,7 +113,7 @@ class CardStackLayoutManagerTest {
         
         // This test is limited because we can't easily mock findViewByPosition
         // but we can test that the method doesn't crash
-        layoutManager.updateProportion(250f, 500f)
+        layoutManager.updateProportion(500f)
     }
 
     @Test

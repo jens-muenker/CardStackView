@@ -11,9 +11,9 @@ class SwipeAnimationSettingTest {
     fun `default builder should create correct settings`() {
         val setting = SwipeAnimationSetting.Builder().build()
         
-        assertEquals(Direction.Right, setting.direction)
-        assertEquals(Duration.Normal.duration, setting.duration)
-        assertTrue(setting.interpolator is AccelerateInterpolator)
+        assertEquals(Direction.Right, setting.getDirection())
+        assertEquals(Duration.Normal.duration, setting.getDuration())
+        assertTrue(setting.getInterpolator() is AccelerateInterpolator)
     }
 
     @Test
@@ -22,7 +22,7 @@ class SwipeAnimationSettingTest {
             .setDirection(Direction.Left)
             .build()
         
-        assertEquals(Direction.Left, setting.direction)
+        assertEquals(Direction.Left, setting.getDirection())
     }
 
     @Test
@@ -31,7 +31,7 @@ class SwipeAnimationSettingTest {
             .setDuration(500)
             .build()
         
-        assertEquals(500, setting.duration)
+        assertEquals(500, setting.getDuration())
     }
 
     @Test
@@ -41,7 +41,7 @@ class SwipeAnimationSettingTest {
             .setInterpolator(customInterpolator)
             .build()
         
-        assertEquals(customInterpolator, setting.interpolator)
+        assertEquals(customInterpolator, setting.getInterpolator())
     }
 
     @Test
@@ -53,9 +53,9 @@ class SwipeAnimationSettingTest {
             .setInterpolator(customInterpolator)
             .build()
         
-        assertEquals(Direction.Top, setting.direction)
-        assertEquals(300, setting.duration)
-        assertEquals(customInterpolator, setting.interpolator)
+        assertEquals(Direction.Top, setting.getDirection())
+        assertEquals(300, setting.getDuration())
+        assertEquals(customInterpolator, setting.getInterpolator())
     }
 
     @Test
@@ -64,7 +64,7 @@ class SwipeAnimationSettingTest {
             .setDirection(Direction.Bottom)
             .build()
         
-        assertEquals(Direction.Bottom, setting.direction)
+        assertEquals(Direction.Bottom, setting.getDirection())
     }
 
     @Test
@@ -73,7 +73,7 @@ class SwipeAnimationSettingTest {
             .setDuration(1000)
             .build()
         
-        assertEquals(1000, setting.duration)
+        assertEquals(1000, setting.getDuration())
     }
 
     @Test
@@ -83,6 +83,6 @@ class SwipeAnimationSettingTest {
             .setInterpolator(customInterpolator)
             .build()
         
-        assertEquals(customInterpolator, setting.interpolator)
+        assertEquals(customInterpolator, setting.getInterpolator())
     }
 }

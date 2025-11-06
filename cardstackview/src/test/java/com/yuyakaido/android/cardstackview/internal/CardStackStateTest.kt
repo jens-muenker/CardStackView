@@ -71,7 +71,7 @@ class CardStackStateTest {
     }
 
     @Test
-    fun `ratio should be capped at 1.0`() {
+    fun `ratio should be capped at one`() {
         cardStackState.dx = 2000 // More than width
         cardStackState.dy = 0
         assertEquals(1.0f, cardStackState.ratio, 0.01f)

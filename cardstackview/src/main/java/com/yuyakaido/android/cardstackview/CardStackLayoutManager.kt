@@ -57,7 +57,8 @@ class CardStackLayoutManager
     }
 
     override fun scrollHorizontallyBy(dx: Int, recycler: Recycler, s: RecyclerView.State): Int {
-        if (cardStackState.topPosition == itemCount) {
+        // Use provided RecyclerView.State for accurate item count in tests/not-attached scenarios
+        if (cardStackState.topPosition == s.itemCount) {
             return 0
         }
 
@@ -100,7 +101,8 @@ class CardStackLayoutManager
     }
 
     override fun scrollVerticallyBy(dy: Int, recycler: Recycler, s: RecyclerView.State): Int {
-        if (cardStackState.topPosition == itemCount) {
+        // Use provided RecyclerView.State for accurate item count in tests/not-attached scenarios
+        if (cardStackState.topPosition == s.itemCount) {
             return 0
         }
 

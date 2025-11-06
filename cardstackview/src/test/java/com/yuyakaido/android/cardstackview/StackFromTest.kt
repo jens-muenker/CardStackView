@@ -8,7 +8,7 @@ class StackFromTest {
     @Test
     fun `enum values should be correct`() {
         val values = StackFrom.values()
-        assertEquals(8, values.size)
+        assertEquals(9, values.size)
         assertTrue(values.contains(StackFrom.None))
         assertTrue(values.contains(StackFrom.Top))
         assertTrue(values.contains(StackFrom.TopAndLeft))

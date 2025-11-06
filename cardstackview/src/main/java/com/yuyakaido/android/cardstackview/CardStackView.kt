@@ -42,7 +42,7 @@ class CardStackView @JvmOverloads constructor(
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val manager = layoutManager as CardStackLayoutManager?
+            val manager = layoutManager as? CardStackLayoutManager
             manager?.updateProportion(event.y)
         }
         return super.onInterceptTouchEvent(event)
