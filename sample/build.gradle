@@ -34,7 +34,7 @@ dependencies {
     implementation project(':cardstackview')
 
     // Kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.2.20"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.2.21"
 
     // Image Loading
     implementation "com.github.bumptech.glide:glide:5.0.5"
