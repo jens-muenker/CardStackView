@@ -3,6 +3,7 @@ package com.yuyakaido.android.cardstackview
 import android.content.Context
 import android.graphics.PointF
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -56,7 +57,8 @@ class CardStackLayoutManager
     }
 
     override fun scrollHorizontallyBy(dx: Int, recycler: Recycler, s: RecyclerView.State): Int {
-        if (cardStackState.topPosition == itemCount) {
+        // Use provided RecyclerView.State for accurate item count in tests/not-attached scenarios
+        if (cardStackState.topPosition == s.itemCount) {
             return 0
         }
 
@@ -94,15 +96,13 @@ class CardStackLayoutManager
 
             CardStackState.Status.ManualSwipeAnimated -> {}
 
-            null -> {
-                Log.e("CardStackLayoutManager", "status is null")
-            }
         }
         return 0
     }
 
     override fun scrollVerticallyBy(dy: Int, recycler: Recycler, s: RecyclerView.State): Int {
-        if (cardStackState.topPosition == itemCount) {
+        // Use provided RecyclerView.State for accurate item count in tests/not-attached scenarios
+        if (cardStackState.topPosition == s.itemCount) {
             return 0
         }
 
@@ -140,9 +140,6 @@ class CardStackLayoutManager
 
             CardStackState.Status.ManualSwipeAnimated -> {}
 
-            null -> {
-                Log.e("CardStackLayoutManager", "status is null")
-            }
         }
         return 0
     }
@@ -202,7 +199,7 @@ class CardStackLayoutManager
         }
     }
 
-    fun updateProportion(x: Float, y: Float) {
+    fun updateProportion(y: Float) {
         if (topPosition < itemCount) {
             val view = findViewByPosition(topPosition)
             if (view != null) {
@@ -272,13 +269,12 @@ class CardStackLayoutManager
              *         at com.android.internal.os.Zygote$MethodAndArgsCaller.run(Zygote.java:240)
              *         at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:767)
              */
-            Handler().post(object : Runnable {
-                override fun run() {
-                    cardStackListener.onCardSwiped(direction)
-                    val topView: View = topView ?: return
-                    cardStackListener.onCardAppeared(topView, cardStackState.topPosition)
+            Handler(Looper.getMainLooper()).post {
+                cardStackListener.onCardSwiped(direction)
+                topView?.let { view ->
+                    cardStackListener.onCardAppeared(view, cardStackState.topPosition)
                 }
-            })
+            }
         }
 
         detachAndScrapAttachedViews(recycler)
@@ -406,61 +402,39 @@ class CardStackLayoutManager
     }
 
     private fun updateOverlay(view: View) {
-        val leftOverlay = view.findViewById<View>(R.id.left_overlay)
-        if (leftOverlay != null) {
-            leftOverlay.alpha = 0.0f
-        }
-        val rightOverlay = view.findViewById<View>(R.id.right_overlay)
-        if (rightOverlay != null) {
-            rightOverlay.alpha = 0.0f
-        }
-        val topOverlay = view.findViewById<View>(R.id.top_overlay)
-        if (topOverlay != null) {
-            topOverlay.alpha = 0.0f
-        }
-        val bottomOverlay = view.findViewById<View>(R.id.bottom_overlay)
-        if (bottomOverlay != null) {
-            bottomOverlay.alpha = 0.0f
-        }
-        val direction = cardStackState.direction
-        val alpha = cardStackSetting.overlayInterpolator.getInterpolation(
-            cardStackState.ratio
+        val overlays = mapOf(
+            Direction.Left to R.id.left_overlay,
+            Direction.Right to R.id.right_overlay,
+            Direction.Top to R.id.top_overlay,
+            Direction.Bottom to R.id.bottom_overlay
         )
-        when (direction) {
-            Direction.Left -> if (leftOverlay != null) {
-                leftOverlay.alpha = alpha
-            }
-
-            Direction.Right -> if (rightOverlay != null) {
-                rightOverlay.alpha = alpha
-            }
-
-            Direction.Top -> if (topOverlay != null) {
-                topOverlay.alpha = alpha
-            }
-
-            Direction.Bottom -> if (bottomOverlay != null) {
-                bottomOverlay.alpha = alpha
-            }
+        
+        // Reset all overlays
+        listOf(
+            R.id.left_overlay,
+            R.id.right_overlay,
+            R.id.top_overlay,
+            R.id.bottom_overlay
+        ).forEach { id ->
+            view.findViewById<View>(id)?.alpha = 0.0f
+        }
+        
+        val direction = cardStackState.direction
+        val alpha = cardStackSetting.overlayInterpolator.getInterpolation(cardStackState.ratio)
+        
+        overlays[direction]?.let { overlayId ->
+            view.findViewById<View>(overlayId)?.alpha = alpha
         }
     }
 
     private fun resetOverlay(view: View) {
-        val leftOverlay = view.findViewById<View>(R.id.left_overlay)
-        if (leftOverlay != null) {
-            leftOverlay.alpha = 0.0f
-        }
-        val rightOverlay = view.findViewById<View>(R.id.right_overlay)
-        if (rightOverlay != null) {
-            rightOverlay.alpha = 0.0f
-        }
-        val topOverlay = view.findViewById<View>(R.id.top_overlay)
-        if (topOverlay != null) {
-            topOverlay.alpha = 0.0f
-        }
-        val bottomOverlay = view.findViewById<View>(R.id.bottom_overlay)
-        if (bottomOverlay != null) {
-            bottomOverlay.alpha = 0.0f
+        listOf(
+            R.id.left_overlay,
+            R.id.right_overlay,
+            R.id.top_overlay,
+            R.id.bottom_overlay
+        ).forEach { id ->
+            view.findViewById<View>(id)?.alpha = 0.0f
         }
     }
 

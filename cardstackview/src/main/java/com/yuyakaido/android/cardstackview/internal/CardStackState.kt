@@ -47,57 +47,32 @@ class CardStackState {
     }
 
     val direction: Direction
-        get() = if (abs(dy.toDouble()) < abs(dx.toDouble())) {
-            if (dx < 0.0f) {
-                Direction.Left
-            } else {
-                Direction.Right
-            }
-        } else {
-            if (dy < 0.0f) {
-                Direction.Top
-            } else {
-                Direction.Bottom
-            }
+        get() = when {
+            abs(dy.toDouble()) < abs(dx.toDouble()) -> if (dx < 0) Direction.Left else Direction.Right
+            else -> if (dy < 0) Direction.Top else Direction.Bottom
         }
 
     val ratio: Float
         get() {
-            val absDx = abs(dx.toDouble()).toInt()
-            val absDy = abs(dy.toDouble()).toInt()
+            val absDx = abs(dx)
+            val absDy = abs(dy)
             val ratio = if (absDx < absDy) {
                 absDy / (height / 2.0f)
             } else {
                 absDx / (width / 2.0f)
             }
-            return min(ratio.toDouble(), 1.0).toFloat()
+            return min(ratio, 1.0f)
         }
 
     val isSwipeCompleted: Boolean
-        get() {
-            if (status.isSwipeAnimating) {
-                if (topPosition < targetPosition) {
-                    if (width < abs(dx.toDouble()) || height < abs(dy.toDouble())) {
-                        return true
-                    }
-                }
-            }
-            return false
-        }
+        get() = status.isSwipeAnimating && 
+                topPosition < targetPosition && 
+                (width < abs(dx) || height < abs(dy))
 
     fun canScrollToPosition(position: Int, itemCount: Int): Boolean {
-        if (position == topPosition) {
-            return false
-        }
-        if (position < 0) {
-            return false
-        }
-        if (itemCount < position) {
-            return false
-        }
-        if (status.isBusy) {
-            return false
-        }
-        return true
+        return position != topPosition && 
+               position >= 0 && 
+               position < itemCount && 
+               !status.isBusy
     }
 }

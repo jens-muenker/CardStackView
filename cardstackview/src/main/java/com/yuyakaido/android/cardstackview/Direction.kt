@@ -1,7 +1,5 @@
 package com.yuyakaido.android.cardstackview
 
-import java.util.Arrays
-
 enum class Direction {
     Left,
     Right,
