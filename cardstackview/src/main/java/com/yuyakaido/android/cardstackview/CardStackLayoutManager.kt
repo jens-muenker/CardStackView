@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Interpolator
@@ -13,6 +12,7 @@ import androidx.annotation.IntRange
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
 import androidx.recyclerview.widget.RecyclerView.SmoothScroller.ScrollVectorProvider
+import com.yuyakaido.android.cardstackview.internal.CardStackAnimatorListener
 import com.yuyakaido.android.cardstackview.internal.CardStackSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackSmoothScroller
 import com.yuyakaido.android.cardstackview.internal.CardStackState
@@ -307,6 +307,7 @@ class CardStackLayoutManager
                 resetRotation(child)
                 resetOverlay(child)
             }
+            handleLastItemAppearingAnimation(child, i)
             i++
         }
 
@@ -534,5 +535,39 @@ class CardStackLayoutManager
 
     fun setOverlayInterpolator(overlayInterpolator: Interpolator) {
         cardStackSetting.overlayInterpolator = overlayInterpolator
+    }
+
+    fun setLastItemAppearingAnimationDuration(@IntRange(from = 0) duration: Int) {
+        cardStackSetting.lastItemAppearingAnimationDuration = duration
+    }
+
+    private fun handleLastItemAppearingAnimation(view: View, position: Int) {
+        val duration = cardStackSetting.lastItemAppearingAnimationDuration
+        if (duration <= 0 || itemCount == 0) {
+            view.alpha = 1f
+            return
+        }
+
+        val isLastAdapterPosition = position == itemCount - 1
+        if (!isLastAdapterPosition) {
+            if (!cardStackState.isLastChildOnAnimation) {
+                view.alpha = 1f
+            }
+            return
+        }
+
+        if (cardStackState.isLastChildWasAnimated || cardStackState.isLastChildOnAnimation) {
+            view.alpha = 1f
+            return
+        }
+
+        cardStackState.isLastChildOnAnimation = true
+        view.animate().cancel()
+        view.alpha = 0f
+        view.animate()
+            .alpha(1f)
+            .setDuration(duration.toLong())
+            .setListener(CardStackAnimatorListener(view, cardStackState))
+            .start()
     }
 }

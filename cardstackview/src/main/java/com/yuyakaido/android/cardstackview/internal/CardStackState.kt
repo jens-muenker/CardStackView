@@ -14,6 +14,8 @@ class CardStackState {
     var topPosition: Int = 0
     var targetPosition: Int = RecyclerView.NO_POSITION
     var proportion: Float = 0.0f
+    var isLastChildOnAnimation: Boolean = false
+    var isLastChildWasAnimated: Boolean = false
 
     enum class Status {
         Idle,

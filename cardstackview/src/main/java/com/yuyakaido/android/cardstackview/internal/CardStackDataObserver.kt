@@ -9,6 +9,7 @@ class CardStackDataObserver(private val recyclerView: RecyclerView) : AdapterDat
     override fun onChanged() {
         val manager = cardStackLayoutManager
         manager.topPosition = 0
+        resetLastItemAnimationState(manager)
     }
 
     override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
@@ -20,7 +21,7 @@ class CardStackDataObserver(private val recyclerView: RecyclerView) : AdapterDat
     }
 
     override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-        // Do nothing
+        resetLastItemAnimationState(cardStackLayoutManager)
     }
 
     override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
@@ -39,11 +40,13 @@ class CardStackDataObserver(private val recyclerView: RecyclerView) : AdapterDat
                 min((topPosition - diff).toDouble(), (manager.itemCount - 1).toDouble())
                     .toInt()
         }
+        resetLastItemAnimationState(manager)
     }
 
     override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
         val manager = cardStackLayoutManager
         manager.removeAllViews()
+        resetLastItemAnimationState(manager)
     }
 
     private val cardStackLayoutManager: CardStackLayoutManager
@@ -54,4 +57,9 @@ class CardStackDataObserver(private val recyclerView: RecyclerView) : AdapterDat
             }
             throw IllegalStateException("CardStackView must be set CardStackLayoutManager.")
         }
+
+    private fun resetLastItemAnimationState(manager: CardStackLayoutManager) {
+        manager.cardStackState.isLastChildOnAnimation = false
+        manager.cardStackState.isLastChildWasAnimated = false
+    }
 }

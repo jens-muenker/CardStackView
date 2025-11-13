@@ -151,6 +151,7 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         manager.setCanScrollVertical(true)
         manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
         manager.setOverlayInterpolator(LinearInterpolator())
+        manager.setLastItemAppearingAnimationDuration(150)
         cardStackView.layoutManager = manager
         cardStackView.adapter = adapter
         cardStackView.itemAnimator.apply {
