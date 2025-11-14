@@ -37,4 +37,9 @@
         android:title="@string/swap_first_for_last"
         />
 
+    <item
+        android:id="@+id/toggle_carousel"
+        android:title="@string/enable_carousel"
+        />
+
 </menu>

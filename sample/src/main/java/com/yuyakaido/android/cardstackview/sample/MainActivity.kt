@@ -2,6 +2,7 @@ package com.yuyakaido.android.cardstackview.sample
 
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -25,9 +26,11 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     private val cardStackView by lazy { findViewById<CardStackView>(R.id.card_stack_view) }
     private val manager by lazy { CardStackLayoutManager(this, this) }
     private val adapter by lazy { CardStackAdapter(createSpots()) }
+    private var isCarouselStyleEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        isCarouselStyleEnabled = savedInstanceState?.getBoolean(STATE_CAROUSEL_STYLE) ?: false
         setContentView(R.layout.activity_main)
         setupNavigation()
         setupCardStackView()
@@ -94,10 +97,16 @@ class MainActivity : AppCompatActivity(), CardStackListener {
                 R.id.remove_spot_from_last -> removeLast(1)
                 R.id.replace_first_spot -> replace()
                 R.id.swap_first_for_last -> swap()
+                R.id.toggle_carousel -> {
+                    isCarouselStyleEnabled = !isCarouselStyleEnabled
+                    applyStackStyle()
+                    updateCarouselMenuTitle(menuItem)
+                }
             }
             drawerLayout.closeDrawers()
             true
         }
+        updateCarouselMenuTitle(navigationView.menu.findItem(R.id.toggle_carousel))
     }
 
     private fun setupCardStackView() {
@@ -140,9 +149,7 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     }
 
     private fun initialize() {
-        manager.setStackFrom(StackFrom.None)
         manager.setVisibleCount(3)
-        manager.setTranslationInterval(8.0f)
         manager.setScaleInterval(0.95f)
         manager.setSwipeThreshold(0.3f)
         manager.setMaxDegree(20.0f)
@@ -153,11 +160,40 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         manager.setOverlayInterpolator(LinearInterpolator())
         cardStackView.layoutManager = manager
         cardStackView.adapter = adapter
+        applyStackStyle()
         cardStackView.itemAnimator.apply {
             if (this is DefaultItemAnimator) {
                 supportsChangeAnimations = false
             }
         }
+    }
+
+    private fun applyStackStyle() {
+        if (isCarouselStyleEnabled) {
+            manager.setStackStyle(CardStackStyle.Carousel)
+            manager.setCarouselSetting(
+                CarouselSetting(
+                    orientation = CarouselOrientation.Vertical,
+                    scaleMultiplier = 0.18f,
+                    minScale = 0.65f,
+                    tiltAngle = 10f
+                )
+            )
+            manager.setStackFrom(StackFrom.Bottom)
+            manager.setTranslationInterval(16.0f)
+        } else {
+            manager.setStackStyle(CardStackStyle.Stack)
+            manager.setCarouselSetting(CarouselSetting())
+            manager.setStackFrom(StackFrom.None)
+            manager.setTranslationInterval(8.0f)
+        }
+        manager.requestLayout()
+    }
+
+    private fun updateCarouselMenuTitle(menuItem: MenuItem?) {
+        menuItem?.title = getString(
+            if (isCarouselStyleEnabled) R.string.disable_carousel else R.string.enable_carousel
+        )
     }
 
     private fun paginate() {
@@ -274,5 +310,14 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         Spot(name = "Big Ben", city = "London", url = "https://images.unsplash.com/photo-1454793147212-9e7e57e89a4f"),
         Spot(name = "Great Wall of China", city = "China", url = "https://images.unsplash.com/photo-1558981017-9c65fb6f2530")
     )
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_CAROUSEL_STYLE, isCarouselStyleEnabled)
+    }
+
+    companion object {
+        private const val STATE_CAROUSEL_STYLE = "state_carousel_style"
+    }
 
 }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Interpolator
@@ -13,6 +12,9 @@ import androidx.annotation.IntRange
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
 import androidx.recyclerview.widget.RecyclerView.SmoothScroller.ScrollVectorProvider
+import com.yuyakaido.android.cardstackview.CardStackStyle
+import com.yuyakaido.android.cardstackview.CarouselOrientation
+import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackSmoothScroller
 import com.yuyakaido.android.cardstackview.internal.CardStackState
@@ -302,9 +304,12 @@ class CardStackLayoutManager
                 updateOverlay(child)
             } else {
                 val currentIndex = i - cardStackState.topPosition
-                updateTranslation(child, currentIndex)
-                updateScale(child, currentIndex)
-                resetRotation(child)
+                if (cardStackSetting.stackStyle == CardStackStyle.Carousel) {
+                    updateCarousel(child, currentIndex)
+                } else {
+                    updateTranslation(child, currentIndex)
+                    updateScale(child, currentIndex)
+                }
                 resetOverlay(child)
             }
             i++
@@ -391,6 +396,53 @@ class CardStackLayoutManager
         view.scaleY = 1.0f
     }
 
+    private fun updateCarousel(view: View, index: Int) {
+        val carousel = cardStackSetting.carouselSetting
+        val distance = (index.toFloat() - cardStackState.ratio).coerceAtLeast(0f)
+        val maxDepth = (cardStackSetting.visibleCount - 1).coerceAtLeast(1)
+        val normalizedDepth = (distance / maxDepth.toFloat()).coerceIn(0f, 1f)
+        val scale =
+            (1.0f - carousel.scaleMultiplier * distance).coerceAtLeast(carousel.minScale)
+        view.scaleX = scale
+        view.scaleY = scale
+
+        val translationIntervalPx =
+            DisplayUtil.dpToPx(context, cardStackSetting.translationInterval).toFloat()
+        val intervalShift = translationIntervalPx * distance
+        val sizeShift = if (carousel.orientation == CarouselOrientation.Vertical) {
+            view.measuredHeight * (1.0f - scale) / 2.0f
+        } else {
+            view.measuredWidth * (1.0f - scale) / 2.0f
+        }
+        val direction = resolveCarouselDirectionSign(carousel.orientation)
+        val translation = direction * (intervalShift + sizeShift)
+
+        if (carousel.orientation == CarouselOrientation.Vertical) {
+            view.translationY = translation
+            view.translationX = 0.0f
+        } else {
+            view.translationX = translation
+            view.translationY = 0.0f
+        }
+
+        val rotation = direction * carousel.tiltAngle * normalizedDepth
+        view.rotation = rotation
+    }
+
+    private fun resolveCarouselDirectionSign(orientation: CarouselOrientation): Float {
+        return when (orientation) {
+            CarouselOrientation.Vertical -> when (cardStackSetting.stackFrom) {
+                StackFrom.Top, StackFrom.TopAndLeft, StackFrom.TopAndRight -> -1f
+                else -> 1f
+            }
+
+            CarouselOrientation.Horizontal -> when (cardStackSetting.stackFrom) {
+                StackFrom.Left, StackFrom.TopAndLeft, StackFrom.BottomAndLeft -> -1f
+                else -> 1f
+            }
+        }
+    }
+
     private fun updateRotation(view: View) {
         val degree =
             cardStackState.dx * cardStackSetting.maxDegree / width * cardStackState.proportion
@@ -399,6 +451,8 @@ class CardStackLayoutManager
 
     private fun resetRotation(view: View) {
         view.rotation = 0.0f
+        view.rotationX = 0.0f
+        view.rotationY = 0.0f
     }
 
     private fun updateOverlay(view: View) {
@@ -481,6 +535,14 @@ class CardStackLayoutManager
 
     fun setStackFrom(stackFrom: StackFrom) {
         cardStackSetting.stackFrom = stackFrom
+    }
+
+    fun setStackStyle(stackStyle: CardStackStyle) {
+        cardStackSetting.stackStyle = stackStyle
+    }
+
+    fun setCarouselSetting(carouselSetting: CarouselSetting) {
+        cardStackSetting.carouselSetting = carouselSetting
     }
 
     fun setVisibleCount(@IntRange(from = 1) visibleCount: Int) {

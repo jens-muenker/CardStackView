@@ -4,6 +4,9 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.yuyakaido.android.cardstackview.CardStackStyle
+import com.yuyakaido.android.cardstackview.CarouselOrientation
+import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackState
 import org.junit.Before
 import org.junit.Test
@@ -120,6 +123,19 @@ class CardStackLayoutManagerTest {
     fun `setStackFrom should update setting`() {
         layoutManager.setStackFrom(StackFrom.Top)
         assertEquals(StackFrom.Top, layoutManager.cardStackSetting.stackFrom)
+    }
+
+    @Test
+    fun `setStackStyle should update setting`() {
+        layoutManager.setStackStyle(CardStackStyle.Carousel)
+        assertEquals(CardStackStyle.Carousel, layoutManager.cardStackSetting.stackStyle)
+    }
+
+    @Test
+    fun `setCarouselSetting should update setting`() {
+        val setting = CarouselSetting(CarouselOrientation.Horizontal, 0.2f, 0.7f, 6f)
+        layoutManager.setCarouselSetting(setting)
+        assertEquals(setting, layoutManager.cardStackSetting.carouselSetting)
     }
 
     @Test

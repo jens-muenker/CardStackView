@@ -14,4 +14,6 @@
     <string name="remove_spot_from_last">Remove spot from last</string>
     <string name="replace_first_spot">Replace first spot</string>
     <string name="swap_first_for_last">Swap first for last</string>
+    <string name="enable_carousel">Enable carousel effect</string>
+    <string name="disable_carousel">Disable carousel effect</string>
 </resources>

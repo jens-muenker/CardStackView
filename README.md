@@ -161,6 +161,27 @@ You can implement reloading by calling `RecyclerView.Adapter.notifyDataSetChange
 CardStackLayoutManager.setStackFrom(StackFrom.None)
 ```
 
+## Carousel Style
+
+Switch the deck into a carousel-inspired presentation to mimic the effect requested in [#310](https://github.com/yuyakaido/CardStackView/issues/310).  
+The `translationInterval` still controls spacing, while `CarouselSetting` lets you fine tune the curve.
+
+```kotlin
+val carousel = CarouselSetting(
+    orientation = CarouselOrientation.Horizontal,
+    scaleMultiplier = 0.18f,
+    minScale = 0.65f,
+    tiltAngle = 8f
+)
+
+manager.setStackStyle(CardStackStyle.Carousel)
+manager.setCarouselSetting(carousel)
+manager.setStackFrom(StackFrom.Bottom)
+manager.setTranslationInterval(16f)
+```
+
+You can toggle this mode in the sample app via the drawer menu to compare the classic stack with the carousel effect.
+
 ## Visible Count
 
 | Default | Value |                                                   Sample                                                    |
