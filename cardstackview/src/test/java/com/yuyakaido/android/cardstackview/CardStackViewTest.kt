@@ -2,6 +2,8 @@ package com.yuyakaido.android.cardstackview
 
 import android.content.Context
 import android.view.MotionEvent
+import android.view.View
+import android.widget.ScrollView
 import androidx.recyclerview.widget.RecyclerView
 import org.junit.Before
 import org.junit.Test
@@ -137,4 +139,34 @@ class CardStackViewTest {
         cardStackView.onInterceptTouchEvent(motionEvent)
         motionEvent.recycle()
     }
+
+    @Test
+    fun `recycling a view should reset nested ScrollView`() {
+        val scrollView = ScrollView(context)
+        scrollView.addView(View(context))
+        scrollView.scrollTo(0, 200)
+
+        val holder = TestViewHolder(scrollView)
+
+        cardStackView.scrollStateRecyclerListener.onViewRecycled(holder)
+
+        assertEquals(0, scrollView.scrollY)
+        assertEquals(0, scrollView.scrollX)
+    }
+
+    @Test
+    fun `external recycler listener should still be invoked`() {
+        var callbackInvoked = false
+        val externalListener = RecyclerView.RecyclerListener {
+            callbackInvoked = true
+        }
+        cardStackView.setRecyclerListener(externalListener)
+
+        val holder = TestViewHolder(View(context))
+        cardStackView.scrollStateRecyclerListener.onViewRecycled(holder)
+
+        assertTrue(callbackInvoked)
+    }
+
+    private class TestViewHolder(view: View) : RecyclerView.ViewHolder(view)
 }

@@ -3,7 +3,12 @@ package com.yuyakaido.android.cardstackview
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.widget.HorizontalScrollView
+import android.widget.ScrollView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.widget.NestedScrollView
 import com.yuyakaido.android.cardstackview.internal.CardStackDataObserver
 import com.yuyakaido.android.cardstackview.internal.CardStackSnapHelper
 
@@ -15,6 +20,11 @@ class CardStackView @JvmOverloads constructor(
     context!!, attrs, defStyle
 ) {
     private val observer = CardStackDataObserver(this)
+    private var externalRecyclerListener: RecyclerListener? = null
+    internal val scrollStateRecyclerListener = RecyclerListener { holder ->
+        resetScrollState(holder.itemView)
+        externalRecyclerListener?.onViewRecycled(holder)
+    }
 
     init {
         initialize()
@@ -48,6 +58,10 @@ class CardStackView @JvmOverloads constructor(
         return super.onInterceptTouchEvent(event)
     }
 
+    override fun setRecyclerListener(listener: RecyclerListener?) {
+        externalRecyclerListener = listener
+    }
+
     fun swipe() {
         if (layoutManager is CardStackLayoutManager) {
             val manager = layoutManager as CardStackLayoutManager?
@@ -65,5 +79,19 @@ class CardStackView @JvmOverloads constructor(
     private fun initialize() {
         CardStackSnapHelper().attachToRecyclerView(this)
         overScrollMode = OVER_SCROLL_NEVER
+        super.setRecyclerListener(scrollStateRecyclerListener)
+    }
+
+    private fun resetScrollState(view: View) {
+        when (view) {
+            is ScrollView -> view.scrollTo(0, 0)
+            is NestedScrollView -> view.scrollTo(0, 0)
+            is HorizontalScrollView -> view.scrollTo(0, 0)
+        }
+        if (view is ViewGroup) {
+            for (index in 0 until view.childCount) {
+                resetScrollState(view.getChildAt(index))
+            }
+        }
     }
 }
