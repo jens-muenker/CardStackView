@@ -514,6 +514,7 @@ class CardStackLayoutManager
     }
 
     fun setDirections(directions: List<Direction>) {
+        ensureDistinctDirections(directions, cardStackSetting.manualRewindDirections)
         cardStackSetting.directions = directions
     }
 
@@ -530,6 +531,7 @@ class CardStackLayoutManager
     }
 
     fun setManualRewindDirections(directions: List<Direction>) {
+        ensureDistinctDirections(cardStackSetting.directions, directions)
         cardStackSetting.manualRewindDirections = directions
     }
 
@@ -543,6 +545,16 @@ class CardStackLayoutManager
 
     fun setOverlayInterpolator(overlayInterpolator: Interpolator) {
         cardStackSetting.overlayInterpolator = overlayInterpolator
+    }
+
+    private fun ensureDistinctDirections(
+        swipeDirections: List<Direction>,
+        rewindDirections: List<Direction>
+    ) {
+        val conflict = swipeDirections.intersect(rewindDirections.toSet())
+        require(conflict.isEmpty()) {
+            "Swipe directions and manual rewind directions must not overlap: $conflict"
+        }
     }
 
     fun rewindFromDrag() {
