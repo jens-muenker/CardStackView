@@ -455,7 +455,13 @@ class CardStackLayoutManager
         startSmoothScroll(scroller)
     }
 
-    private fun smoothScrollToPrevious(position: Int) {
+    private fun smoothScrollToPrevious(
+        position: Int,
+        scrollType: CardStackSmoothScroller.ScrollType = CardStackSmoothScroller.ScrollType.AutomaticRewind
+    ) {
+        if (position < 0) {
+            return
+        }
         val topView = topView
         if (topView != null) {
             cardStackListener.onCardDisappeared(this.topView, cardStackState.topPosition)
@@ -464,8 +470,7 @@ class CardStackLayoutManager
         cardStackState.proportion = 0.0f
         cardStackState.targetPosition = position
         cardStackState.topPosition--
-        val scroller =
-            CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.AutomaticRewind, this)
+        val scroller = CardStackSmoothScroller(scrollType, this)
         scroller.targetPosition = cardStackState.topPosition
         startSmoothScroll(scroller)
     }
@@ -524,6 +529,10 @@ class CardStackLayoutManager
         cardStackSetting.swipeableMethod = swipeableMethod
     }
 
+    fun setManualRewindDirections(directions: List<Direction>) {
+        cardStackSetting.manualRewindDirections = directions
+    }
+
     fun setSwipeAnimationSetting(swipeAnimationSetting: SwipeAnimationSetting) {
         cardStackSetting.swipeAnimationSetting = swipeAnimationSetting
     }
@@ -534,5 +543,19 @@ class CardStackLayoutManager
 
     fun setOverlayInterpolator(overlayInterpolator: Interpolator) {
         cardStackSetting.overlayInterpolator = overlayInterpolator
+    }
+
+    fun rewindFromDrag() {
+        if (!cardStackSetting.swipeableMethod.canSwipeManually()) {
+            return
+        }
+        val previousPosition = cardStackState.topPosition - 1
+        if (previousPosition < 0) {
+            return
+        }
+        smoothScrollToPrevious(
+            previousPosition,
+            CardStackSmoothScroller.ScrollType.ManualRewind
+        )
     }
 }

@@ -210,6 +210,13 @@ class CardStackLayoutManagerTest {
     }
 
     @Test
+    fun `setManualRewindDirections should update setting`() {
+        val rewinds = listOf(Direction.Bottom)
+        layoutManager.setManualRewindDirections(rewinds)
+        assertEquals(rewinds, layoutManager.cardStackSetting.manualRewindDirections)
+    }
+
+    @Test
     fun `setCanScrollHorizontal should update setting`() {
         layoutManager.setCanScrollHorizontal(false)
         assertFalse(layoutManager.cardStackSetting.canScrollHorizontal)
