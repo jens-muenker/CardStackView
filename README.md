@@ -295,6 +295,47 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 | CardStackListener.onCardAppeared(View view, int position)          | This method is called when the card appeared.                       |
 | CardStackListener.onCardDisappeared(View view, int position)       | This method is called when the card disappeared.                    |
 
+# FAQ
+
+### How do I use a custom `CardStackListener` to (de)activate swipes? ([Issue #381](https://github.com/yuyakaido/CardStackView/issues/381))
+
+You can pass any `CardStackListener` implementation to the `CardStackLayoutManager` constructor (or assign it later via `cardStackListener`). Inside the listener you can toggle user interaction – for example to enable/disable swipes via UI buttons:
+
+```
+lateinit var manager: CardStackLayoutManager
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    manager = CardStackLayoutManager(this, object : CardStackListener {
+        override fun onCardDragging(direction: Direction?, ratio: Float) {}
+        override fun onCardSwiped(direction: Direction?) {}
+        override fun onCardRewound() {}
+        override fun onCardCanceled() {}
+        override fun onCardAppeared(view: View?, position: Int) {}
+        override fun onCardDisappeared(view: View?, position: Int) {}
+    })
+    cardStackView.layoutManager = manager
+}
+
+private fun setupButtons() {
+    val disable = findViewById<View>(R.id.disable_swipe_button)
+    val enable = findViewById<View>(R.id.enable_swipe_button)
+
+    disable.setOnClickListener {
+        manager.setSwipeableMethod(SwipeableMethod.None)
+        manager.setCanScrollHorizontal(false)
+        manager.setCanScrollVertical(false)
+    }
+    enable.setOnClickListener {
+        manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
+        manager.setCanScrollHorizontal(true)
+        manager.setCanScrollVertical(true)
+    }
+}
+```
+
+This approach gives you full control over when manual swipes are allowed while still letting you react to swipe events through the custom listener.
+
 # Changelog
 
 **3.1.0**
