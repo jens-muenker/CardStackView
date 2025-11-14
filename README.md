@@ -244,6 +244,15 @@ CardStackLayoutManager.setCanScrollHorizontal(true)
 CardStackLayoutManager.setCanScrollVertical(true)
 ```
 
+You can further restrict manual dragging per direction:
+
+```kotlin
+CardStackLayoutManager.setCanScrollLeft(true)
+CardStackLayoutManager.setCanScrollRight(true)
+CardStackLayoutManager.setCanScrollUp(true)
+CardStackLayoutManager.setCanScrollDown(true)
+```
+
 ## Swipeable Method
 
 | Default |       Value        |                                                                        Sample                                                                         |
@@ -274,6 +283,10 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 | CardStackLayoutManager.setDirections(List<Direction> directions)                                | You can set Direction.                      |
 | CardStackLayoutManager.setCanScrollHorizontal(boolean canScrollHorizontal)                      | You can set CanScrollHorizontal.            |
 | CardStackLayoutManager.setCanScrollVertical(boolean canScrollVertical)                          | You can set CanScrollVertical.              |
+| CardStackLayoutManager.setCanScrollLeft(boolean canScrollLeft)                                  | You can enable or disable dragging left.    |
+| CardStackLayoutManager.setCanScrollRight(boolean canScrollRight)                                | You can enable or disable dragging right.   |
+| CardStackLayoutManager.setCanScrollUp(boolean canScrollUp)                                      | You can enable or disable dragging up.      |
+| CardStackLayoutManager.setCanScrollDown(boolean canScrollDown)                                  | You can enable or disable dragging down.    |
 | CardStackLayoutManager.setSwipeAnimationSetting(SwipeAnimationSetting swipeAnimationSetting)    | You can set SwipeAnimationSetting.          |
 | CardStackLayoutManager.setRewindAnimationSetting(RewindAnimationSetting rewindAnimationSetting) | You can set RewindAnimationSetting.         |
 

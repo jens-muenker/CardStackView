@@ -20,6 +20,10 @@ class CardStackSetting {
     var directions: List<Direction> = Direction.HORIZONTAL
     var canScrollHorizontal: Boolean = true
     var canScrollVertical: Boolean = true
+    var canScrollLeft: Boolean = true
+    var canScrollRight: Boolean = true
+    var canScrollUp: Boolean = true
+    var canScrollDown: Boolean = true
     var swipeableMethod: SwipeableMethod = SwipeableMethod.AutomaticAndManual
     @JvmField
     var swipeAnimationSetting: SwipeAnimationSetting = SwipeAnimationSetting.Builder().build()
