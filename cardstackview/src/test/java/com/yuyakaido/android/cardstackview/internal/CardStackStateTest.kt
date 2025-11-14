@@ -78,6 +78,22 @@ class CardStackStateTest {
     }
 
     @Test
+    fun `ratio should be zero when width is zero`() {
+        cardStackState.width = 0
+        cardStackState.dx = 10
+        cardStackState.dy = 0
+        assertEquals(0.0f, cardStackState.ratio, 0.0f)
+    }
+
+    @Test
+    fun `ratio should be zero when height is zero`() {
+        cardStackState.height = 0
+        cardStackState.dx = 0
+        cardStackState.dy = 10
+        assertEquals(0.0f, cardStackState.ratio, 0.0f)
+    }
+
+    @Test
     fun `isSwipeCompleted should return true when conditions are met`() {
         cardStackState.status = CardStackState.Status.ManualSwipeAnimating
         cardStackState.topPosition = 0
