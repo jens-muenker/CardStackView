@@ -37,4 +37,14 @@
         android:title="@string/swap_first_for_last"
         />
 
+    <item
+        android:id="@+id/apply_default_stack"
+        android:title="@string/apply_default_stack"
+        />
+
+    <item
+        android:id="@+id/apply_vertical_stack"
+        android:title="@string/apply_vertical_stack"
+        />
+
 </menu>
