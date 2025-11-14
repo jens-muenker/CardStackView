@@ -124,6 +124,22 @@ Put overlay view in your item layout of RecyclerView.
 |  Top   |  top_overlay   |
 | Bottom | bottom_overlay |
 
+### Overlay Troubleshooting (Issue [#383](https://github.com/yuyakaido/CardStackView/issues/383))
+
+If your like/dislike overlays never fade in while swiping, double-check the following:
+
+- Every card item must contain `FrameLayout`s (or any `View`) with the exact IDs listed above. The manager locates overlays with `findViewById`, so different IDs or missing containers keep the alpha at `0`.
+- Keep these overlay containers visible (`visibility="visible"`) and let the library control the alpha. Setting them to `GONE` or fully transparent in your adapter prevents the interpolator from showing them.
+- Make sure you reuse the same `CardStackLayoutManager` instance that you configure. Example:
+  ```kotlin
+  val manager = CardStackLayoutManager(context, listener).apply {
+      setDirections(Direction.HORIZONTAL)
+      setOverlayInterpolator(LinearInterpolator())
+  }
+  cardStackView.layoutManager = manager
+  ```
+- Overlays only react to directions that are enabled. If you only enable `Direction.Left`, the right overlay will never appear.
+
 ## Overlay Interpolator
 
 You can set own interpolator to define the rate of change of alpha.
