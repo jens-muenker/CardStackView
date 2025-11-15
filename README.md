@@ -8,6 +8,11 @@ This repository is a fork of <a href="https://github.com/yuyakaido/CardStackView
 
 ![Example](https://github.com/yuyakaido/images/blob/master/CardStackView/sample-overview.gif)
 
+# Support This Project
+If this library is useful to you or your apps, consider supporting its development:
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/jens.muenker)
+
 # Usage
 
 1. Include the library as a local library project in your build.gradle:
