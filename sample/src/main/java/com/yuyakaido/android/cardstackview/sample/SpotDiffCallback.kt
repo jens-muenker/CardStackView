@@ -3,8 +3,8 @@ package com.yuyakaido.android.cardstackview.sample
 import androidx.recyclerview.widget.DiffUtil
 
 class SpotDiffCallback(
-        private val old: List<Spot>,
-        private val new: List<Spot>
+    private val old: List<Spot>,
+    private val new: List<Spot>
 ) : DiffUtil.Callback() {
 
     override fun getOldListSize(): Int = old.size

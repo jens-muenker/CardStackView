@@ -1,8 +1,12 @@
 package com.yuyakaido.android.cardstackview.internal
 
 import android.view.animation.LinearInterpolator
+import com.yuyakaido.android.cardstackview.CardStackStyle
+import com.yuyakaido.android.cardstackview.CarouselOrientation
+import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.Direction
 import com.yuyakaido.android.cardstackview.StackFrom
+import com.yuyakaido.android.cardstackview.StackLayout
 import com.yuyakaido.android.cardstackview.SwipeableMethod
 import org.junit.Before
 import org.junit.Test
@@ -20,8 +24,11 @@ class CardStackSettingTest {
     @Test
     fun `default values should be correct`() {
         assertEquals(StackFrom.None, cardStackSetting.stackFrom)
+        assertEquals(CardStackStyle.Stack, cardStackSetting.stackStyle)
+        assertEquals(CarouselSetting(), cardStackSetting.carouselSetting)
         assertEquals(3, cardStackSetting.visibleCount)
         assertEquals(8.0f, cardStackSetting.translationInterval, 0.01f)
+        assertEquals(StackLayout.Overlay, cardStackSetting.stackLayout)
         assertEquals(0.95f, cardStackSetting.scaleInterval, 0.01f)
         assertEquals(0.3f, cardStackSetting.swipeThreshold, 0.01f)
         assertEquals(20.0f, cardStackSetting.maxDegree, 0.01f)
@@ -42,6 +49,25 @@ class CardStackSettingTest {
     fun `stackFrom should be settable`() {
         cardStackSetting.stackFrom = StackFrom.Top
         assertEquals(StackFrom.Top, cardStackSetting.stackFrom)
+    }
+
+    @Test
+    fun `stackLayout should be settable`() {
+        cardStackSetting.stackLayout = StackLayout.Linear
+        assertEquals(StackLayout.Linear, cardStackSetting.stackLayout)
+    }
+
+    @Test
+    fun `stackStyle should be settable`() {
+        cardStackSetting.stackStyle = CardStackStyle.Carousel
+        assertEquals(CardStackStyle.Carousel, cardStackSetting.stackStyle)
+    }
+
+    @Test
+    fun `carouselSetting should be settable`() {
+        val setting = CarouselSetting(CarouselOrientation.Horizontal, 0.2f, 0.7f, 6f)
+        cardStackSetting.carouselSetting = setting
+        assertEquals(setting, cardStackSetting.carouselSetting)
     }
 
     @Test
