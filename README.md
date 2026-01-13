@@ -8,6 +8,11 @@ This repository is a fork of <a href="https://github.com/yuyakaido/CardStackView
 
 ![Example](https://github.com/yuyakaido/images/blob/master/CardStackView/sample-overview.gif)
 
+# Support This Project
+If this library is useful to you or your apps, consider supporting its development:
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/jens.muenker)
+
 # Usage
 
 1. Include the library as a local library project in your build.gradle:
@@ -137,6 +142,22 @@ Put overlay view in your item layout of RecyclerView.
 |  Top   |  top_overlay   |
 | Bottom | bottom_overlay |
 
+### Overlay Troubleshooting (Issue [#383](https://github.com/yuyakaido/CardStackView/issues/383))
+
+If your like/dislike overlays never fade in while swiping, double-check the following:
+
+- Every card item must contain `FrameLayout`s (or any `View`) with the exact IDs listed above. The manager locates overlays with `findViewById`, so different IDs or missing containers keep the alpha at `0`.
+- Keep these overlay containers visible (`visibility="visible"`) and let the library control the alpha. Setting them to `GONE` or fully transparent in your adapter prevents the interpolator from showing them.
+- Make sure you reuse the same `CardStackLayoutManager` instance that you configure. Example:
+  ```kotlin
+  val manager = CardStackLayoutManager(context, listener).apply {
+      setDirections(Direction.HORIZONTAL)
+      setOverlayInterpolator(LinearInterpolator())
+  }
+  cardStackView.layoutManager = manager
+  ```
+- Overlays only react to directions that are enabled. If you only enable `Direction.Left`, the right overlay will never appear.
+
 ## Overlay Interpolator
 
 You can set own interpolator to define the rate of change of alpha.
@@ -173,6 +194,38 @@ You can implement reloading by calling `RecyclerView.Adapter.notifyDataSetChange
 ```kotlin
 CardStackLayoutManager.setStackFrom(StackFrom.None)
 ```
+
+## Stack Layout
+
+Choose whether cards overlap each other (`StackLayout.Overlay`, default) or line up sequentially like a vertical/horizontal RecyclerView (`StackLayout.Linear`). When using the linear mode the `translationInterval` value becomes the spacing between cards.
+
+```kotlin
+manager.setStackLayout(StackLayout.Linear)
+manager.setStackFrom(StackFrom.Bottom)   // cards rise from the bottom
+manager.setTranslationInterval(12f)      // spacing in dp between items
+manager.setScaleInterval(1.0f)           // optional: keep card sizes identical
+```
+
+## Carousel Style
+
+Switch the deck into a carousel-inspired presentation to mimic the effect requested in [#310](https://github.com/yuyakaido/CardStackView/issues/310).  
+The `translationInterval` still controls spacing, while `CarouselSetting` lets you fine tune the curve.
+
+```kotlin
+val carousel = CarouselSetting(
+    orientation = CarouselOrientation.Horizontal,
+    scaleMultiplier = 0.18f,
+    minScale = 0.65f,
+    tiltAngle = 8f
+)
+
+manager.setStackStyle(CardStackStyle.Carousel)
+manager.setCarouselSetting(carousel)
+manager.setStackFrom(StackFrom.Bottom)
+manager.setTranslationInterval(16f)
+```
+
+You can toggle this mode in the sample app via the drawer menu to compare the classic stack with the carousel effect.
 
 ## Visible Count
 
@@ -257,6 +310,15 @@ CardStackLayoutManager.setCanScrollHorizontal(true)
 CardStackLayoutManager.setCanScrollVertical(true)
 ```
 
+You can further restrict manual dragging per direction:
+
+```kotlin
+CardStackLayoutManager.setCanScrollLeft(true)
+CardStackLayoutManager.setCanScrollRight(true)
+CardStackLayoutManager.setCanScrollUp(true)
+CardStackLayoutManager.setCanScrollDown(true)
+```
+
 ## Swipeable Method
 
 | Default |       Value        |                                                                        Sample                                                                         |
@@ -278,8 +340,11 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 |:------------------------------------------------------------------------------------------------|:--------------------------------------------|
 | CardStackView.swipe()                                                                           | You can swipe once by calling this method.  |
 | CardStackView.rewind()                                                                          | You can rewind once by calling this method. |
-| CardStackLayoutManager.getTopPosition()                                                         | You can get position displayed on top.      |
+| CardStackLayoutManager.topPosition                                                               | You can get/set position displayed on top.  |
 | CardStackLayoutManager.setStackFrom(StackFrom stackFrom)                                        | You can set StackFrom.                      |
+| CardStackLayoutManager.setStackLayout(StackLayout stackLayout)                                   | You can set StackLayout (Overlay or Linear).|
+| CardStackLayoutManager.setStackStyle(CardStackStyle stackStyle)                                  | You can set CardStackStyle (Stack or Carousel).|
+| CardStackLayoutManager.setCarouselSetting(CarouselSetting carouselSetting)                      | You can set CarouselSetting.                |
 | CardStackLayoutManager.setTranslationInterval(float translationInterval)                        | You can set TranslationInterval.            |
 | CardStackLayoutManager.setScaleInterval(float scaleInterval)                                    | You can set ScaleInterval.                  |
 | CardStackLayoutManager.setSwipeThreshold(float swipeThreshold)                                  | You can set SwipeThreshold.                 |
@@ -287,8 +352,13 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 | CardStackLayoutManager.setDirections(List<Direction> directions)                                | You can set Direction.                      |
 | CardStackLayoutManager.setCanScrollHorizontal(boolean canScrollHorizontal)                      | You can set CanScrollHorizontal.            |
 | CardStackLayoutManager.setCanScrollVertical(boolean canScrollVertical)                          | You can set CanScrollVertical.              |
+| CardStackLayoutManager.setCanScrollLeft(boolean canScrollLeft)                                  | You can enable or disable dragging left.    |
+| CardStackLayoutManager.setCanScrollRight(boolean canScrollRight)                                | You can enable or disable dragging right.   |
+| CardStackLayoutManager.setCanScrollUp(boolean canScrollUp)                                      | You can enable or disable dragging up.      |
+| CardStackLayoutManager.setCanScrollDown(boolean canScrollDown)                                  | You can enable or disable dragging down.    |
 | CardStackLayoutManager.setSwipeAnimationSetting(SwipeAnimationSetting swipeAnimationSetting)    | You can set SwipeAnimationSetting.          |
 | CardStackLayoutManager.setRewindAnimationSetting(RewindAnimationSetting rewindAnimationSetting) | You can set RewindAnimationSetting.         |
+| CardStackLayoutManager.setOverlayInterpolator(Interpolator overlayInterpolator)                  | You can set OverlayInterpolator.            |
 
 ## Advanced usages
 
@@ -307,6 +377,47 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 | CardStackListener.onCardCanceled()                                 | This method is called when the card is dragged less than threshold. |
 | CardStackListener.onCardAppeared(View view, int position)          | This method is called when the card appeared.                       |
 | CardStackListener.onCardDisappeared(View view, int position)       | This method is called when the card disappeared.                    |
+
+# FAQ
+
+### How do I use a custom `CardStackListener` to (de)activate swipes? ([Issue #381](https://github.com/yuyakaido/CardStackView/issues/381))
+
+You can pass any `CardStackListener` implementation to the `CardStackLayoutManager` constructor (or assign it later via `cardStackListener`). Inside the listener you can toggle user interaction – for example to enable/disable swipes via UI buttons:
+
+```
+lateinit var manager: CardStackLayoutManager
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    manager = CardStackLayoutManager(this, object : CardStackListener {
+        override fun onCardDragging(direction: Direction?, ratio: Float) {}
+        override fun onCardSwiped(direction: Direction?) {}
+        override fun onCardRewound() {}
+        override fun onCardCanceled() {}
+        override fun onCardAppeared(view: View?, position: Int) {}
+        override fun onCardDisappeared(view: View?, position: Int) {}
+    })
+    cardStackView.layoutManager = manager
+}
+
+private fun setupButtons() {
+    val disable = findViewById<View>(R.id.disable_swipe_button)
+    val enable = findViewById<View>(R.id.enable_swipe_button)
+
+    disable.setOnClickListener {
+        manager.setSwipeableMethod(SwipeableMethod.None)
+        manager.setCanScrollHorizontal(false)
+        manager.setCanScrollVertical(false)
+    }
+    enable.setOnClickListener {
+        manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
+        manager.setCanScrollHorizontal(true)
+        manager.setCanScrollVertical(true)
+    }
+}
+```
+
+This approach gives you full control over when manual swipes are allowed while still letting you react to swipe events through the custom listener.
 
 # Changelog
 

@@ -57,9 +57,19 @@ class CardStackState {
             val absDx = abs(dx)
             val absDy = abs(dy)
             val ratio = if (absDx < absDy) {
-                absDy / (height / 2.0f)
+                val halfHeight = height / 2.0f
+                if (halfHeight == 0f) {
+                    0f
+                } else {
+                    absDy / halfHeight
+                }
             } else {
-                absDx / (width / 2.0f)
+                val halfWidth = width / 2.0f
+                if (halfWidth == 0f) {
+                    0f
+                } else {
+                    absDx / halfWidth
+                }
             }
             return min(ratio, 1.0f)
         }

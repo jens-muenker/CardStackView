@@ -26,13 +26,13 @@ android {
             includeAndroidResources = true
         }
     }
-}
 
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(21)
         }
     }
+}
 
 dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
