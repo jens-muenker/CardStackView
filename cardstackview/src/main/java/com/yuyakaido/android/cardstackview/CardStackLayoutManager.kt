@@ -553,6 +553,14 @@ class CardStackLayoutManager @JvmOverloads constructor(
             Direction.Bottom to R.id.bottom_overlay
         )
         
+        // Icon IDs for each overlay direction (optional, may not exist in all layouts)
+        val overlayIconIds = mapOf(
+            Direction.Left to getResourceId(view, "left_overlay_icon"),
+            Direction.Right to getResourceId(view, "right_overlay_icon"),
+            Direction.Top to getResourceId(view, "top_overlay_icon"),
+            Direction.Bottom to getResourceId(view, "bottom_overlay_icon")
+        )
+        
         // Reset all overlays
         listOf(
             R.id.left_overlay,
@@ -565,10 +573,51 @@ class CardStackLayoutManager @JvmOverloads constructor(
         
         val direction = cardStackState.direction
         val alpha = cardStackSetting.overlayInterpolator.getInterpolation(cardStackState.ratio)
+        val isRewindDirection = cardStackSetting.manualRewindDirections.contains(direction)
         
         overlays[direction]?.let { overlayId ->
-            view.findViewById<View>(overlayId)?.alpha = alpha
+            val overlayView = view.findViewById<View>(overlayId)
+            overlayView?.alpha = alpha
+            
+            // Update icon if it's a rewind direction and icon ID exists
+            overlayIconIds[direction]?.takeIf { it != 0 }?.let { iconId ->
+                view.findViewById<android.widget.ImageView>(iconId)?.let { imageView ->
+                    if (isRewindDirection) {
+                        // Set rewind icon if available
+                        val rewindIconId = view.context.resources.getIdentifier(
+                            "rewind_white_120dp",
+                            "drawable",
+                            view.context.packageName
+                        )
+                        if (rewindIconId != 0) {
+                            imageView.setImageResource(rewindIconId)
+                        }
+                    } else {
+                        // Reset to default icon based on direction
+                        val defaultIconName = when (direction) {
+                            Direction.Left, Direction.Bottom -> "skip_white_120dp"
+                            Direction.Right, Direction.Top -> "like_white_120dp"
+                        }
+                        val defaultIconId = view.context.resources.getIdentifier(
+                            defaultIconName,
+                            "drawable",
+                            view.context.packageName
+                        )
+                        if (defaultIconId != 0) {
+                            imageView.setImageResource(defaultIconId)
+                        }
+                    }
+                }
+            }
         }
+    }
+    
+    private fun getResourceId(view: View, resourceName: String): Int {
+        return view.context.resources.getIdentifier(
+            resourceName,
+            "id",
+            view.context.packageName
+        )
     }
 
     private fun resetOverlay(view: View) {
@@ -599,7 +648,13 @@ class CardStackLayoutManager @JvmOverloads constructor(
         startSmoothScroll(scroller)
     }
 
-    private fun smoothScrollToPrevious(position: Int) {
+    private fun smoothScrollToPrevious(
+        position: Int,
+        scrollType: CardStackSmoothScroller.ScrollType = CardStackSmoothScroller.ScrollType.AutomaticRewind
+    ) {
+        if (position < 0) {
+            return
+        }
         val topView = topView
         if (topView != null) {
             cardStackListener.onCardDisappeared(this.topView, cardStackState.topPosition)
@@ -608,8 +663,7 @@ class CardStackLayoutManager @JvmOverloads constructor(
         cardStackState.proportion = 0.0f
         cardStackState.targetPosition = position
         cardStackState.topPosition--
-        val scroller =
-            CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.AutomaticRewind, this)
+        val scroller = CardStackSmoothScroller(scrollType, this)
         scroller.targetPosition = cardStackState.topPosition
         startSmoothScroll(scroller)
     }
@@ -665,6 +719,7 @@ class CardStackLayoutManager @JvmOverloads constructor(
     }
 
     fun setDirections(directions: List<Direction>) {
+        ensureDistinctDirections(directions, cardStackSetting.manualRewindDirections)
         cardStackSetting.directions = directions
     }
 
@@ -694,6 +749,11 @@ class CardStackLayoutManager @JvmOverloads constructor(
 
     fun setSwipeableMethod(swipeableMethod: SwipeableMethod) {
         cardStackSetting.swipeableMethod = swipeableMethod
+    }
+
+    fun setManualRewindDirections(directions: List<Direction>) {
+        ensureDistinctDirections(cardStackSetting.directions, directions)
+        cardStackSetting.manualRewindDirections = directions
     }
 
     fun setSwipeAnimationSetting(swipeAnimationSetting: SwipeAnimationSetting) {
@@ -734,5 +794,29 @@ class CardStackLayoutManager @JvmOverloads constructor(
             dy < 0 -> cardStackSetting.canScrollDown
             else -> true
         }
+    }
+
+    private fun ensureDistinctDirections(
+        swipeDirections: List<Direction>,
+        rewindDirections: List<Direction>
+    ) {
+        val conflict = swipeDirections.intersect(rewindDirections.toSet())
+        require(conflict.isEmpty()) {
+            "Swipe directions and manual rewind directions must not overlap: $conflict"
+        }
+    }
+
+    fun rewindFromDrag() {
+        if (!cardStackSetting.swipeableMethod.canSwipeManually()) {
+            return
+        }
+        val previousPosition = cardStackState.topPosition - 1
+        if (previousPosition < 0) {
+            return
+        }
+        smoothScrollToPrevious(
+            previousPosition,
+            CardStackSmoothScroller.ScrollType.ManualRewind
+        )
     }
 }

@@ -24,6 +24,7 @@ class CardStackSetting {
     var maxDegree: Float = 20.0f
     @JvmField
     var directions: List<Direction> = Direction.HORIZONTAL
+    var manualRewindDirections: List<Direction> = emptyList()
     var canScrollHorizontal: Boolean = true
     var canScrollVertical: Boolean = true
     var canScrollLeft: Boolean = true

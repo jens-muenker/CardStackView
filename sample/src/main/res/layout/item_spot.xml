@@ -53,6 +53,7 @@
         android:background="@drawable/overlay_black">
 
         <ImageView
+            android:id="@+id/left_overlay_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/skip_white_120dp"
@@ -67,6 +68,7 @@
         android:background="@drawable/overlay_black">
 
         <ImageView
+            android:id="@+id/right_overlay_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/like_white_120dp"
@@ -81,6 +83,7 @@
         android:background="@drawable/overlay_black">
 
         <ImageView
+            android:id="@+id/top_overlay_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/like_white_120dp"
@@ -95,11 +98,13 @@
         android:background="@drawable/overlay_black">
 
         <ImageView
+            android:id="@+id/bottom_overlay_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/skip_white_120dp"
             android:layout_gravity="center"/>
 
     </FrameLayout>
+
 
 </androidx.cardview.widget.CardView>

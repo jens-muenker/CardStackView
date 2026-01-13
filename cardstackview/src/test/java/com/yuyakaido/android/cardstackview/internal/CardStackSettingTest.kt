@@ -33,6 +33,7 @@ class CardStackSettingTest {
         assertEquals(0.3f, cardStackSetting.swipeThreshold, 0.01f)
         assertEquals(20.0f, cardStackSetting.maxDegree, 0.01f)
         assertEquals(Direction.HORIZONTAL, cardStackSetting.directions)
+        assertTrue(cardStackSetting.manualRewindDirections.isEmpty())
         assertTrue(cardStackSetting.canScrollHorizontal)
         assertTrue(cardStackSetting.canScrollVertical)
         assertTrue(cardStackSetting.canScrollLeft)
@@ -105,6 +106,13 @@ class CardStackSettingTest {
         val customDirections = listOf(Direction.Left, Direction.Right)
         cardStackSetting.directions = customDirections
         assertEquals(customDirections, cardStackSetting.directions)
+    }
+
+    @Test
+    fun `manualRewindDirections should be settable`() {
+        val rewinds = listOf(Direction.Bottom)
+        cardStackSetting.manualRewindDirections = rewinds
+        assertEquals(rewinds, cardStackSetting.manualRewindDirections)
     }
 
     @Test

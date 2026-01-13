@@ -102,6 +102,19 @@ CardStackLayoutManager.setRewindAnimationSetting(setting)
 CardStackView.rewind()
 ```
 
+### Manual rewind gestures
+
+If you want to give users a swipe gesture to bring back the last card, specify which directions should trigger a rewind while dragging:
+
+```kotlin
+manager.setDirections(Direction.VERTICAL)
+manager.setManualRewindDirections(listOf(Direction.Bottom))
+```
+
+When the user swipes in one of the configured `manualRewindDirections`, the previous card is animated back onto the stack (if available) instead of removing the current card again.
+
+> **Note:** `manualRewindDirections` must not contain any direction that is already enabled in `setDirections(...)`. In this case, the LayoutManager throws an `IllegalArgumentException` to ensure swipe and rewind gestures remain distinct.
+
 ## Overlay View
 
 | Value |                                                  Sample                                                  |

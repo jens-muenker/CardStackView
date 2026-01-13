@@ -186,6 +186,8 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         manager.setSwipeThreshold(0.3f)
         manager.setMaxDegree(20.0f)
         manager.setDirections(Direction.HORIZONTAL)
+        // Enable manual rewind gesture: swipe down to bring back previous card
+        manager.setManualRewindDirections(listOf(Direction.Bottom))
         manager.setCanScrollHorizontal(true)
         manager.setCanScrollVertical(true)
         manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
@@ -201,6 +203,8 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         manager.setSwipeThreshold(0.25f)
         manager.setMaxDegree(0.0f)
         manager.setDirections(Direction.VERTICAL)
+        // Enable manual rewind gesture: swipe left to bring back previous card
+        manager.setManualRewindDirections(listOf(Direction.Left))
         manager.setCanScrollHorizontal(false)
         manager.setCanScrollVertical(true)
         manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)

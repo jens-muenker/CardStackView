@@ -297,6 +297,35 @@ class CardStackLayoutManagerTest {
     }
 
     @Test
+    fun `setManualRewindDirections should update setting`() {
+        val rewinds = listOf(Direction.Bottom)
+        layoutManager.setManualRewindDirections(rewinds)
+        assertEquals(rewinds, layoutManager.cardStackSetting.manualRewindDirections)
+    }
+
+    @Test
+    fun `setDirections should throw when overlapping manual rewind directions`() {
+        layoutManager.setManualRewindDirections(listOf(Direction.Bottom))
+        try {
+            layoutManager.setDirections(listOf(Direction.Bottom, Direction.Top))
+            fail("Expected IllegalArgumentException")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message?.contains("must not overlap") == true)
+        }
+    }
+
+    @Test
+    fun `setManualRewindDirections should throw when overlapping swipe directions`() {
+        layoutManager.setDirections(listOf(Direction.Left, Direction.Right))
+        try {
+            layoutManager.setManualRewindDirections(listOf(Direction.Left))
+            fail("Expected IllegalArgumentException")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message?.contains("must not overlap") == true)
+        }
+    }
+
+    @Test
     fun `setCanScrollHorizontal should update setting`() {
         layoutManager.setCanScrollHorizontal(false)
         assertFalse(layoutManager.cardStackSetting.canScrollHorizontal)
