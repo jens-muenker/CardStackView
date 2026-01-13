@@ -115,8 +115,14 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     private fun setupButton() {
         val skip = findViewById<View>(R.id.skip_button)
         skip.setOnClickListener {
+            // Wähle Richtung basierend auf aktueller Konfiguration
+            val direction = if (manager.cardStackSetting.directions.contains(Direction.Left)) {
+                Direction.Left  // Horizontale Swipes
+            } else {
+                Direction.Bottom  // Vertikale Swipes (nach unten = Skip/Dislike)
+            }
             val setting = SwipeAnimationSetting.Builder()
-                    .setDirection(Direction.Left)
+                    .setDirection(direction)
                     .setDuration(Duration.Normal.duration)
                     .setInterpolator(AccelerateInterpolator())
                     .build()
@@ -137,8 +143,14 @@ class MainActivity : AppCompatActivity(), CardStackListener {
 
         val like = findViewById<View>(R.id.like_button)
         like.setOnClickListener {
+            // Wähle Richtung basierend auf aktueller Konfiguration
+            val direction = if (manager.cardStackSetting.directions.contains(Direction.Right)) {
+                Direction.Right  // Horizontale Swipes
+            } else {
+                Direction.Top  // Vertikale Swipes (nach oben = Like)
+            }
             val setting = SwipeAnimationSetting.Builder()
-                    .setDirection(Direction.Right)
+                    .setDirection(direction)
                     .setDuration(Duration.Normal.duration)
                     .setInterpolator(AccelerateInterpolator())
                     .build()
