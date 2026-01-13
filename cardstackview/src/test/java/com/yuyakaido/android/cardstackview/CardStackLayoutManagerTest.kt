@@ -105,6 +105,70 @@ class CardStackLayoutManagerTest {
     }
 
     @Test
+    fun `scrollHorizontallyBy should block left drag when disabled`() {
+        layoutManager.cardStackState.topPosition = 0
+        layoutManager.cardStackState.status = CardStackState.Status.Idle
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Manual
+        layoutManager.cardStackSetting.canScrollHorizontal = true
+        layoutManager.cardStackSetting.canScrollLeft = false
+        layoutManager.cardStackSetting.canScrollRight = true
+        `when`(mockState.itemCount).thenReturn(10)
+
+        val result = layoutManager.scrollHorizontallyBy(10, mockRecycler, mockState)
+
+        assertEquals(0, result)
+        assertEquals(0, layoutManager.cardStackState.dx)
+    }
+
+    @Test
+    fun `scrollHorizontallyBy should block right drag when disabled`() {
+        layoutManager.cardStackState.topPosition = 0
+        layoutManager.cardStackState.status = CardStackState.Status.Idle
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Manual
+        layoutManager.cardStackSetting.canScrollHorizontal = true
+        layoutManager.cardStackSetting.canScrollLeft = true
+        layoutManager.cardStackSetting.canScrollRight = false
+        `when`(mockState.itemCount).thenReturn(10)
+
+        val result = layoutManager.scrollHorizontallyBy(-10, mockRecycler, mockState)
+
+        assertEquals(0, result)
+        assertEquals(0, layoutManager.cardStackState.dx)
+    }
+
+    @Test
+    fun `scrollVerticallyBy should block up drag when disabled`() {
+        layoutManager.cardStackState.topPosition = 0
+        layoutManager.cardStackState.status = CardStackState.Status.Idle
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Manual
+        layoutManager.cardStackSetting.canScrollVertical = true
+        layoutManager.cardStackSetting.canScrollUp = false
+        layoutManager.cardStackSetting.canScrollDown = true
+        `when`(mockState.itemCount).thenReturn(10)
+
+        val result = layoutManager.scrollVerticallyBy(10, mockRecycler, mockState)
+
+        assertEquals(0, result)
+        assertEquals(0, layoutManager.cardStackState.dy)
+    }
+
+    @Test
+    fun `scrollVerticallyBy should block down drag when disabled`() {
+        layoutManager.cardStackState.topPosition = 0
+        layoutManager.cardStackState.status = CardStackState.Status.Idle
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Manual
+        layoutManager.cardStackSetting.canScrollVertical = true
+        layoutManager.cardStackSetting.canScrollUp = true
+        layoutManager.cardStackSetting.canScrollDown = false
+        `when`(mockState.itemCount).thenReturn(10)
+
+        val result = layoutManager.scrollVerticallyBy(-10, mockRecycler, mockState)
+
+        assertEquals(0, result)
+        assertEquals(0, layoutManager.cardStackState.dy)
+    }
+
+    @Test
     fun `updateProportion should update proportion correctly`() {
         val mockView = mock(View::class.java)
         `when`(mockView.top).thenReturn(100)
@@ -242,6 +306,30 @@ class CardStackLayoutManagerTest {
     fun `setCanScrollVertical should update setting`() {
         layoutManager.setCanScrollVertical(false)
         assertFalse(layoutManager.cardStackSetting.canScrollVertical)
+    }
+
+    @Test
+    fun `setCanScrollLeft should update setting`() {
+        layoutManager.setCanScrollLeft(false)
+        assertFalse(layoutManager.cardStackSetting.canScrollLeft)
+    }
+
+    @Test
+    fun `setCanScrollRight should update setting`() {
+        layoutManager.setCanScrollRight(false)
+        assertFalse(layoutManager.cardStackSetting.canScrollRight)
+    }
+
+    @Test
+    fun `setCanScrollUp should update setting`() {
+        layoutManager.setCanScrollUp(false)
+        assertFalse(layoutManager.cardStackSetting.canScrollUp)
+    }
+
+    @Test
+    fun `setCanScrollDown should update setting`() {
+        layoutManager.setCanScrollDown(false)
+        assertFalse(layoutManager.cardStackSetting.canScrollDown)
     }
 
     @Test

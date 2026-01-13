@@ -35,6 +35,10 @@ class CardStackSettingTest {
         assertEquals(Direction.HORIZONTAL, cardStackSetting.directions)
         assertTrue(cardStackSetting.canScrollHorizontal)
         assertTrue(cardStackSetting.canScrollVertical)
+        assertTrue(cardStackSetting.canScrollLeft)
+        assertTrue(cardStackSetting.canScrollRight)
+        assertTrue(cardStackSetting.canScrollUp)
+        assertTrue(cardStackSetting.canScrollDown)
         assertEquals(SwipeableMethod.AutomaticAndManual, cardStackSetting.swipeableMethod)
         assertNotNull(cardStackSetting.swipeAnimationSetting)
         assertNotNull(cardStackSetting.rewindAnimationSetting)
@@ -113,6 +117,30 @@ class CardStackSettingTest {
     fun `canScrollVertical should be settable`() {
         cardStackSetting.canScrollVertical = false
         assertFalse(cardStackSetting.canScrollVertical)
+    }
+
+    @Test
+    fun `canScrollLeft should be settable`() {
+        cardStackSetting.canScrollLeft = false
+        assertFalse(cardStackSetting.canScrollLeft)
+    }
+
+    @Test
+    fun `canScrollRight should be settable`() {
+        cardStackSetting.canScrollRight = false
+        assertFalse(cardStackSetting.canScrollRight)
+    }
+
+    @Test
+    fun `canScrollUp should be settable`() {
+        cardStackSetting.canScrollUp = false
+        assertFalse(cardStackSetting.canScrollUp)
+    }
+
+    @Test
+    fun `canScrollDown should be settable`() {
+        cardStackSetting.canScrollDown = false
+        assertFalse(cardStackSetting.canScrollDown)
     }
 
     @Test

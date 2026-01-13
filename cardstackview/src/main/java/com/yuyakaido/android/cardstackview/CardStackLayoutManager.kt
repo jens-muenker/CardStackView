@@ -65,12 +65,18 @@ class CardStackLayoutManager @JvmOverloads constructor(
 
         when (cardStackState.status) {
             CardStackState.Status.Idle -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualHorizontalScrollAllowed(dx)) {
+                    return 0
+                }
                 cardStackState.dx -= dx
                 update(recycler)
                 return dx
             }
 
             CardStackState.Status.Dragging -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualHorizontalScrollAllowed(dx)) {
+                    return 0
+                }
                 cardStackState.dx -= dx
                 update(recycler)
                 return dx
@@ -90,6 +96,9 @@ class CardStackLayoutManager @JvmOverloads constructor(
 
             CardStackState.Status.AutomaticSwipeAnimated -> {}
             CardStackState.Status.ManualSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualHorizontalScrollAllowed(dx)) {
+                    return 0
+                }
                 cardStackState.dx -= dx
                 update(recycler)
                 return dx
@@ -109,12 +118,18 @@ class CardStackLayoutManager @JvmOverloads constructor(
 
         when (cardStackState.status) {
             CardStackState.Status.Idle -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualVerticalScrollAllowed(dy)) {
+                    return 0
+                }
                 cardStackState.dy -= dy
                 update(recycler)
                 return dy
             }
 
             CardStackState.Status.Dragging -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualVerticalScrollAllowed(dy)) {
+                    return 0
+                }
                 cardStackState.dy -= dy
                 update(recycler)
                 return dy
@@ -134,6 +149,9 @@ class CardStackLayoutManager @JvmOverloads constructor(
 
             CardStackState.Status.AutomaticSwipeAnimated -> {}
             CardStackState.Status.ManualSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualVerticalScrollAllowed(dy)) {
+                    return 0
+                }
                 cardStackState.dy -= dy
                 update(recycler)
                 return dy
@@ -658,6 +676,22 @@ class CardStackLayoutManager @JvmOverloads constructor(
         cardStackSetting.canScrollVertical = canScrollVertical
     }
 
+    fun setCanScrollLeft(canScrollLeft: Boolean) {
+        cardStackSetting.canScrollLeft = canScrollLeft
+    }
+
+    fun setCanScrollRight(canScrollRight: Boolean) {
+        cardStackSetting.canScrollRight = canScrollRight
+    }
+
+    fun setCanScrollUp(canScrollUp: Boolean) {
+        cardStackSetting.canScrollUp = canScrollUp
+    }
+
+    fun setCanScrollDown(canScrollDown: Boolean) {
+        cardStackSetting.canScrollDown = canScrollDown
+    }
+
     fun setSwipeableMethod(swipeableMethod: SwipeableMethod) {
         cardStackSetting.swipeableMethod = swipeableMethod
     }
@@ -672,5 +706,33 @@ class CardStackLayoutManager @JvmOverloads constructor(
 
     fun setOverlayInterpolator(overlayInterpolator: Interpolator) {
         cardStackSetting.overlayInterpolator = overlayInterpolator
+    }
+
+    private fun isManualHorizontalScrollAllowed(dx: Int): Boolean {
+        if (!cardStackSetting.canScrollHorizontal) {
+            return false
+        }
+        if (dx == 0) {
+            return true
+        }
+        return when {
+            dx > 0 -> cardStackSetting.canScrollLeft
+            dx < 0 -> cardStackSetting.canScrollRight
+            else -> true
+        }
+    }
+
+    private fun isManualVerticalScrollAllowed(dy: Int): Boolean {
+        if (!cardStackSetting.canScrollVertical) {
+            return false
+        }
+        if (dy == 0) {
+            return true
+        }
+        return when {
+            dy > 0 -> cardStackSetting.canScrollUp
+            dy < 0 -> cardStackSetting.canScrollDown
+            else -> true
+        }
     }
 }
