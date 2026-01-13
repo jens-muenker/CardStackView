@@ -2,6 +2,8 @@ package com.yuyakaido.android.cardstackview.internal
 
 import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
+import com.yuyakaido.android.cardstackview.CardStackStyle
+import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.Direction
 import com.yuyakaido.android.cardstackview.RewindAnimationSetting
 import com.yuyakaido.android.cardstackview.StackFrom
@@ -12,6 +14,8 @@ import com.yuyakaido.android.cardstackview.SwipeableMethod
 class CardStackSetting {
     var stackFrom: StackFrom = StackFrom.None
     var stackLayout: StackLayout = StackLayout.Overlay
+    var stackStyle: CardStackStyle = CardStackStyle.Stack
+    var carouselSetting: CarouselSetting = CarouselSetting()
     var visibleCount: Int = 3
     var translationInterval: Float = 8.0f
     var scaleInterval: Float = 0.95f // 0.0f - 1.0f

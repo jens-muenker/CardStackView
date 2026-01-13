@@ -193,6 +193,27 @@ manager.setTranslationInterval(12f)      // spacing in dp between items
 manager.setScaleInterval(1.0f)           // optional: keep card sizes identical
 ```
 
+## Carousel Style
+
+Switch the deck into a carousel-inspired presentation to mimic the effect requested in [#310](https://github.com/yuyakaido/CardStackView/issues/310).  
+The `translationInterval` still controls spacing, while `CarouselSetting` lets you fine tune the curve.
+
+```kotlin
+val carousel = CarouselSetting(
+    orientation = CarouselOrientation.Horizontal,
+    scaleMultiplier = 0.18f,
+    minScale = 0.65f,
+    tiltAngle = 8f
+)
+
+manager.setStackStyle(CardStackStyle.Carousel)
+manager.setCarouselSetting(carousel)
+manager.setStackFrom(StackFrom.Bottom)
+manager.setTranslationInterval(16f)
+```
+
+You can toggle this mode in the sample app via the drawer menu to compare the classic stack with the carousel effect.
+
 ## Visible Count
 
 | Default | Value |                                                   Sample                                                    |
@@ -297,8 +318,11 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 |:------------------------------------------------------------------------------------------------|:--------------------------------------------|
 | CardStackView.swipe()                                                                           | You can swipe once by calling this method.  |
 | CardStackView.rewind()                                                                          | You can rewind once by calling this method. |
-| CardStackLayoutManager.getTopPosition()                                                         | You can get position displayed on top.      |
+| CardStackLayoutManager.topPosition                                                               | You can get/set position displayed on top.  |
 | CardStackLayoutManager.setStackFrom(StackFrom stackFrom)                                        | You can set StackFrom.                      |
+| CardStackLayoutManager.setStackLayout(StackLayout stackLayout)                                   | You can set StackLayout (Overlay or Linear).|
+| CardStackLayoutManager.setStackStyle(CardStackStyle stackStyle)                                  | You can set CardStackStyle (Stack or Carousel).|
+| CardStackLayoutManager.setCarouselSetting(CarouselSetting carouselSetting)                      | You can set CarouselSetting.                |
 | CardStackLayoutManager.setTranslationInterval(float translationInterval)                        | You can set TranslationInterval.            |
 | CardStackLayoutManager.setScaleInterval(float scaleInterval)                                    | You can set ScaleInterval.                  |
 | CardStackLayoutManager.setSwipeThreshold(float swipeThreshold)                                  | You can set SwipeThreshold.                 |
@@ -308,6 +332,7 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 | CardStackLayoutManager.setCanScrollVertical(boolean canScrollVertical)                          | You can set CanScrollVertical.              |
 | CardStackLayoutManager.setSwipeAnimationSetting(SwipeAnimationSetting swipeAnimationSetting)    | You can set SwipeAnimationSetting.          |
 | CardStackLayoutManager.setRewindAnimationSetting(RewindAnimationSetting rewindAnimationSetting) | You can set RewindAnimationSetting.         |
+| CardStackLayoutManager.setOverlayInterpolator(Interpolator overlayInterpolator)                  | You can set OverlayInterpolator.            |
 
 ## Advanced usages
 
