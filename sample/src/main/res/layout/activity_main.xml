@@ -29,6 +29,15 @@
             android:layout_height="match_parent"
             android:clipChildren="false">
 
+            <com.yuyakaido.android.cardstackview.CardStackView
+                android:id="@+id/card_stack_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/button_container"
+                android:padding="4dp"
+                android:clipToPadding="false">
+            </com.yuyakaido.android.cardstackview.CardStackView>
+
             <RelativeLayout
                 android:id="@+id/button_container"
                 android:orientation="horizontal"
@@ -36,7 +45,8 @@
                 android:layout_marginBottom="8dp"
                 android:layout_height="80dp"
                 android:layout_alignParentBottom="true"
-                android:clipChildren="false">
+                android:clipChildren="false"
+                android:elevation="8dp">
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/skip_button"
@@ -77,15 +87,6 @@
                     app:rippleColor="#226FE2B3"/>
 
             </RelativeLayout>
-
-            <com.yuyakaido.android.cardstackview.CardStackView
-                android:id="@+id/card_stack_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_above="@+id/button_container"
-                android:padding="4dp"
-                android:clipToPadding="false">
-            </com.yuyakaido.android.cardstackview.CardStackView>
 
         </RelativeLayout>
 

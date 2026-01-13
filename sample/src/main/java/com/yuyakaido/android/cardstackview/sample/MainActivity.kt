@@ -2,6 +2,7 @@ package com.yuyakaido.android.cardstackview.sample
 
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -17,7 +18,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DiffUtil
 import com.google.android.material.navigation.NavigationView
 import com.yuyakaido.android.cardstackview.*
-import java.util.*
 
 class MainActivity : AppCompatActivity(), CardStackListener {
 
@@ -25,9 +25,11 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     private val cardStackView by lazy { findViewById<CardStackView>(R.id.card_stack_view) }
     private val manager by lazy { CardStackLayoutManager(this, this) }
     private val adapter by lazy { CardStackAdapter(createSpots()) }
+    private var isCarouselStyleEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        isCarouselStyleEnabled = savedInstanceState?.getBoolean(STATE_CAROUSEL_STYLE) ?: false
         setContentView(R.layout.activity_main)
         setupNavigation()
         setupCardStackView()
@@ -37,7 +39,7 @@ class MainActivity : AppCompatActivity(), CardStackListener {
             override fun handleOnBackPressed() {
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawers()
-                }else{
+                } else {
                     finish()
                 }
             }
@@ -94,10 +96,24 @@ class MainActivity : AppCompatActivity(), CardStackListener {
                 R.id.remove_spot_from_last -> removeLast(1)
                 R.id.replace_first_spot -> replace()
                 R.id.swap_first_for_last -> swap()
+                R.id.apply_default_stack -> {
+                    applyDefaultStackAppearance()
+                    cardStackView.layoutManager?.requestLayout()
+                }
+                R.id.apply_vertical_stack -> {
+                    applyVerticalStackAppearance()
+                    cardStackView.layoutManager?.requestLayout()
+                }
+                R.id.toggle_carousel -> {
+                    isCarouselStyleEnabled = !isCarouselStyleEnabled
+                    applyStackStyle()
+                    updateCarouselMenuTitle(menuItem)
+                }
             }
             drawerLayout.closeDrawers()
             true
         }
+        updateCarouselMenuTitle(navigationView.menu.findItem(R.id.toggle_carousel))
     }
 
     private fun setupCardStackView() {
@@ -107,11 +123,17 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     private fun setupButton() {
         val skip = findViewById<View>(R.id.skip_button)
         skip.setOnClickListener {
+            // Choose direction based on current configuration
+            val direction = if (manager.cardStackSetting.directions.contains(Direction.Left)) {
+                Direction.Left  // Horizontal swipes
+            } else {
+                Direction.Bottom  // Vertical swipes (down = skip/dislike)
+            }
             val setting = SwipeAnimationSetting.Builder()
-                    .setDirection(Direction.Left)
-                    .setDuration(Duration.Normal.duration)
-                    .setInterpolator(AccelerateInterpolator())
-                    .build()
+                .setDirection(direction)
+                .setDuration(Duration.Normal.duration)
+                .setInterpolator(AccelerateInterpolator())
+                .build()
             manager.setSwipeAnimationSetting(setting)
             cardStackView.swipe()
         }
@@ -119,39 +141,34 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         val rewind = findViewById<View>(R.id.rewind_button)
         rewind.setOnClickListener {
             val setting = RewindAnimationSetting.Builder()
-                    .setDirection(Direction.Bottom)
-                    .setDuration(Duration.Normal.duration)
-                    .setInterpolator(DecelerateInterpolator())
-                    .build()
+                .setDirection(Direction.Bottom)
+                .setDuration(Duration.Normal.duration)
+                .setInterpolator(DecelerateInterpolator())
+                .build()
             manager.setRewindAnimationSetting(setting)
             cardStackView.rewind()
         }
 
         val like = findViewById<View>(R.id.like_button)
         like.setOnClickListener {
+            // Choose direction based on current configuration
+            val direction = if (manager.cardStackSetting.directions.contains(Direction.Right)) {
+                Direction.Right  // Horizontal swipes
+            } else {
+                Direction.Top  // Vertical swipes (up = like)
+            }
             val setting = SwipeAnimationSetting.Builder()
-                    .setDirection(Direction.Right)
-                    .setDuration(Duration.Normal.duration)
-                    .setInterpolator(AccelerateInterpolator())
-                    .build()
+                .setDirection(direction)
+                .setDuration(Duration.Normal.duration)
+                .setInterpolator(AccelerateInterpolator())
+                .build()
             manager.setSwipeAnimationSetting(setting)
             cardStackView.swipe()
         }
     }
 
     private fun initialize() {
-        manager.setStackFrom(StackFrom.None)
-        manager.setVisibleCount(3)
-        manager.setTranslationInterval(8.0f)
-        manager.setScaleInterval(0.95f)
-        manager.setSwipeThreshold(0.3f)
-        manager.setMaxDegree(20.0f)
-        manager.setDirections(Direction.HORIZONTAL)
-        manager.setCanScrollHorizontal(true)
-        manager.setCanScrollVertical(true)
-        manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
-        manager.setOverlayInterpolator(LinearInterpolator())
-        manager.setLastItemAppearingAnimationDuration(150)
+        applyDefaultStackAppearance()
         cardStackView.layoutManager = manager
         cardStackView.adapter = adapter
         cardStackView.itemAnimator.apply {
@@ -159,6 +176,86 @@ class MainActivity : AppCompatActivity(), CardStackListener {
                 supportsChangeAnimations = false
             }
         }
+    }
+
+    private fun applyDefaultStackAppearance() {
+        manager.setStackLayout(StackLayout.Overlay)
+        manager.setStackFrom(StackFrom.None)
+        manager.setVisibleCount(3)
+        manager.setScaleInterval(0.95f)
+        manager.setSwipeThreshold(0.3f)
+        manager.setMaxDegree(20.0f)
+        manager.setDirections(Direction.HORIZONTAL)
+        // Enable manual rewind gesture: swipe down to bring back previous card
+        manager.setManualRewindDirections(listOf(Direction.Bottom))
+        manager.setCanScrollHorizontal(true)
+        manager.setCanScrollVertical(true)
+        manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
+        manager.setOverlayInterpolator(LinearInterpolator())
+    }
+
+    private fun applyVerticalStackAppearance() {
+        manager.setStackLayout(StackLayout.Linear)
+        manager.setStackFrom(StackFrom.Bottom)
+        manager.setVisibleCount(4)
+        manager.setTranslationInterval(12f)
+        manager.setScaleInterval(1.0f)
+        manager.setSwipeThreshold(0.25f)
+        manager.setMaxDegree(0.0f)
+        manager.setDirections(Direction.VERTICAL)
+        // Enable manual rewind gesture: swipe left to bring back previous card
+        manager.setManualRewindDirections(listOf(Direction.Left))
+        manager.setCanScrollHorizontal(false)
+        manager.setCanScrollVertical(true)
+        manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
+        manager.setOverlayInterpolator(LinearInterpolator())
+        manager.setLastItemAppearingAnimationDuration(150)
+        cardStackView.layoutManager = manager
+        cardStackView.adapter = adapter
+        applyStackStyle()
+        cardStackView.itemAnimator.apply {
+            if (this is DefaultItemAnimator) {
+                supportsChangeAnimations = false
+            }
+        }
+    }
+
+    private fun applyStackStyle() {
+        val isLinearStack = manager.cardStackSetting.stackLayout == StackLayout.Linear
+
+        if (isCarouselStyleEnabled) {
+            manager.setStackStyle(CardStackStyle.Carousel)
+            manager.setCarouselSetting(
+                CarouselSetting(
+                    orientation = CarouselOrientation.Vertical,
+                    scaleMultiplier = 0.18f,
+                    minScale = 0.65f,
+                    tiltAngle = 10f
+                )
+            )
+            manager.setStackFrom(StackFrom.Bottom)
+            manager.setTranslationInterval(16.0f)
+        } else {
+            manager.setStackStyle(CardStackStyle.Stack)
+            manager.setCarouselSetting(CarouselSetting())
+            // Preserve StackFrom and TranslationInterval for Linear Stack
+            if (isLinearStack) {
+                // Keep vertical stack settings
+                manager.setStackFrom(StackFrom.Bottom)
+                manager.setTranslationInterval(12f)
+            } else {
+                // Default stack settings
+                manager.setStackFrom(StackFrom.None)
+                manager.setTranslationInterval(8.0f)
+            }
+        }
+        manager.requestLayout()
+    }
+
+    private fun updateCarouselMenuTitle(menuItem: MenuItem?) {
+        menuItem?.title = getString(
+            if (isCarouselStyleEnabled) R.string.disable_carousel else R.string.enable_carousel
+        )
     }
 
     private fun paginate() {
@@ -257,9 +354,9 @@ class MainActivity : AppCompatActivity(), CardStackListener {
 
     private fun createSpot(): Spot {
         return Spot(
-                name = "Yasaka Shrine",
-                city = "Kyoto",
-                url = "https://images.unsplash.com/photo-1713346642924-fdda99d45870"
+            name = "Yasaka Shrine",
+            city = "Kyoto",
+            url = "https://images.unsplash.com/photo-1713346642924-fdda99d45870"
         )
     }
 
@@ -275,5 +372,14 @@ class MainActivity : AppCompatActivity(), CardStackListener {
         Spot(name = "Big Ben", city = "London", url = "https://images.unsplash.com/photo-1454793147212-9e7e57e89a4f"),
         Spot(name = "Great Wall of China", city = "China", url = "https://images.unsplash.com/photo-1558981017-9c65fb6f2530")
     )
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_CAROUSEL_STYLE, isCarouselStyleEnabled)
+    }
+
+    companion object {
+        private const val STATE_CAROUSEL_STYLE = "state_carousel_style"
+    }
 
 }

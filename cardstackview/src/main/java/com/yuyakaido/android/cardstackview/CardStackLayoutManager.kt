@@ -12,14 +12,16 @@ import androidx.annotation.IntRange
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
 import androidx.recyclerview.widget.RecyclerView.SmoothScroller.ScrollVectorProvider
+import com.yuyakaido.android.cardstackview.CardStackStyle
+import com.yuyakaido.android.cardstackview.CarouselOrientation
+import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackAnimatorListener
 import com.yuyakaido.android.cardstackview.internal.CardStackSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackSmoothScroller
 import com.yuyakaido.android.cardstackview.internal.CardStackState
 import com.yuyakaido.android.cardstackview.internal.DisplayUtil
 
-class CardStackLayoutManager
-@JvmOverloads constructor(
+class CardStackLayoutManager @JvmOverloads constructor(
     private val context: Context,
     listener: CardStackListener = CardStackListener.DEFAULT
 ) : RecyclerView.LayoutManager(), ScrollVectorProvider {
@@ -64,12 +66,18 @@ class CardStackLayoutManager
 
         when (cardStackState.status) {
             CardStackState.Status.Idle -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualHorizontalScrollAllowed(dx)) {
+                    return 0
+                }
                 cardStackState.dx -= dx
                 update(recycler)
                 return dx
             }
 
             CardStackState.Status.Dragging -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualHorizontalScrollAllowed(dx)) {
+                    return 0
+                }
                 cardStackState.dx -= dx
                 update(recycler)
                 return dx
@@ -89,6 +97,9 @@ class CardStackLayoutManager
 
             CardStackState.Status.AutomaticSwipeAnimated -> {}
             CardStackState.Status.ManualSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualHorizontalScrollAllowed(dx)) {
+                    return 0
+                }
                 cardStackState.dx -= dx
                 update(recycler)
                 return dx
@@ -108,12 +119,18 @@ class CardStackLayoutManager
 
         when (cardStackState.status) {
             CardStackState.Status.Idle -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualVerticalScrollAllowed(dy)) {
+                    return 0
+                }
                 cardStackState.dy -= dy
                 update(recycler)
                 return dy
             }
 
             CardStackState.Status.Dragging -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualVerticalScrollAllowed(dy)) {
+                    return 0
+                }
                 cardStackState.dy -= dy
                 update(recycler)
                 return dy
@@ -133,6 +150,9 @@ class CardStackLayoutManager
 
             CardStackState.Status.AutomaticSwipeAnimated -> {}
             CardStackState.Status.ManualSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualVerticalScrollAllowed(dy)) {
+                    return 0
+                }
                 cardStackState.dy -= dy
                 update(recycler)
                 return dy
@@ -204,7 +224,11 @@ class CardStackLayoutManager
             val view = findViewByPosition(topPosition)
             if (view != null) {
                 val half = height / 2.0f
-                cardStackState.proportion = -(y - half - view.top) / half
+                if (half == 0f) {
+                    cardStackState.proportion = 0.0f
+                } else {
+                    cardStackState.proportion = -(y - half - view.top) / half
+                }
             }
         }
     }
@@ -226,7 +250,7 @@ class CardStackLayoutManager
             // 4. Swipe A
             // 5. Display only one card on the screen (let this card be B)
             // 6. After paging is complete, B should be displayed, but A appears on the screen
-            removeAndRecycleView(topView!!, recycler)
+            topView?.let { removeAndRecycleView(it, recycler) }
 
             val direction = cardStackState.direction
 
@@ -302,9 +326,12 @@ class CardStackLayoutManager
                 updateOverlay(child)
             } else {
                 val currentIndex = i - cardStackState.topPosition
-                updateTranslation(child, currentIndex)
-                updateScale(child, currentIndex)
-                resetRotation(child)
+                if (cardStackSetting.stackStyle == CardStackStyle.Carousel) {
+                    updateCarousel(child, currentIndex)
+                } else {
+                    updateTranslation(child, currentIndex)
+                    updateScale(child, currentIndex)
+                }
                 resetOverlay(child)
             }
             handleLastItemAppearingAnimation(child, i)
@@ -322,6 +349,13 @@ class CardStackLayoutManager
     }
 
     private fun updateTranslation(view: View, index: Int) {
+        when (cardStackSetting.stackLayout) {
+            StackLayout.Linear -> updateLinearTranslation(view, index)
+            StackLayout.Overlay -> updateOverlayTranslation(view, index)
+        }
+    }
+
+    private fun updateOverlayTranslation(view: View, index: Int) {
         val nextIndex = index - 1
         val translationPx = DisplayUtil.dpToPx(context, cardStackSetting.translationInterval)
         val currentTranslation = (index * translationPx).toFloat()
@@ -357,6 +391,64 @@ class CardStackLayoutManager
         }
     }
 
+    private fun updateLinearTranslation(view: View, index: Int) {
+        val nextIndex = index - 1
+        if (nextIndex < 0) {
+            return
+        }
+        if (cardStackSetting.stackFrom == StackFrom.None) {
+            updateOverlayTranslation(view, index)
+            return
+        }
+
+        val spacingPx = DisplayUtil.dpToPx(context, cardStackSetting.translationInterval)
+        val spacing = spacingPx.toFloat()
+        val decoratedHeight = getDecoratedMeasuredHeight(view)
+        val decoratedWidth = getDecoratedMeasuredWidth(view)
+        val verticalStep = decoratedHeight + spacing
+        val horizontalStep = decoratedWidth + spacing
+
+        val currentVerticalTranslation = (index * verticalStep)
+        val nextVerticalTranslation = (nextIndex * verticalStep)
+        val targetVertical = currentVerticalTranslation -
+            (currentVerticalTranslation - nextVerticalTranslation) * cardStackState.ratio
+
+        val currentHorizontalTranslation = (index * horizontalStep)
+        val nextHorizontalTranslation = (nextIndex * horizontalStep)
+        val targetHorizontal = currentHorizontalTranslation -
+            (currentHorizontalTranslation - nextHorizontalTranslation) * cardStackState.ratio
+
+        when (cardStackSetting.stackFrom) {
+            StackFrom.Top -> view.translationY = -targetVertical
+            StackFrom.Bottom -> view.translationY = targetVertical
+            StackFrom.Left -> view.translationX = -targetHorizontal
+            StackFrom.Right -> view.translationX = targetHorizontal
+            StackFrom.TopAndLeft -> {
+                view.translationY = -targetVertical
+                view.translationX = -targetHorizontal
+            }
+
+            StackFrom.TopAndRight -> {
+                view.translationY = -targetVertical
+                view.translationX = targetHorizontal
+            }
+
+            StackFrom.BottomAndLeft -> {
+                view.translationY = targetVertical
+                view.translationX = -targetHorizontal
+            }
+
+            StackFrom.BottomAndRight -> {
+                view.translationY = targetVertical
+                view.translationX = targetHorizontal
+            }
+
+            StackFrom.None -> {
+                // Already handled above.
+            }
+        }
+    }
+
     private fun resetTranslation(view: View) {
         view.translationX = 0.0f
         view.translationY = 0.0f
@@ -379,10 +471,10 @@ class CardStackLayoutManager
             StackFrom.Bottom -> view.scaleX = targetScale
             StackFrom.BottomAndLeft -> view.scaleX = targetScale
             StackFrom.BottomAndRight -> view.scaleX = targetScale
-            StackFrom.Left ->                 // TODO Should handle ScaleX
+            StackFrom.Left ->                 // TODO: Should handle ScaleX
                 view.scaleY = targetScale
 
-            StackFrom.Right ->                 // TODO Should handle ScaleX
+            StackFrom.Right ->                 // TODO: Should handle ScaleX
                 view.scaleY = targetScale
         }
     }
@@ -392,7 +484,58 @@ class CardStackLayoutManager
         view.scaleY = 1.0f
     }
 
+    private fun updateCarousel(view: View, index: Int) {
+        val carousel = cardStackSetting.carouselSetting
+        val distance = (index.toFloat() - cardStackState.ratio).coerceAtLeast(0f)
+        val maxDepth = (cardStackSetting.visibleCount - 1).coerceAtLeast(1)
+        val normalizedDepth = (distance / maxDepth.toFloat()).coerceIn(0f, 1f)
+        val scale =
+            (1.0f - carousel.scaleMultiplier * distance).coerceAtLeast(carousel.minScale)
+        view.scaleX = scale
+        view.scaleY = scale
+
+        val translationIntervalPx =
+            DisplayUtil.dpToPx(context, cardStackSetting.translationInterval).toFloat()
+        val intervalShift = translationIntervalPx * distance
+        val sizeShift = if (carousel.orientation == CarouselOrientation.Vertical) {
+            view.measuredHeight * (1.0f - scale) / 2.0f
+        } else {
+            view.measuredWidth * (1.0f - scale) / 2.0f
+        }
+        val direction = resolveCarouselDirectionSign(carousel.orientation)
+        val translation = direction * (intervalShift + sizeShift)
+
+        if (carousel.orientation == CarouselOrientation.Vertical) {
+            view.translationY = translation
+            view.translationX = 0.0f
+        } else {
+            view.translationX = translation
+            view.translationY = 0.0f
+        }
+
+        val rotation = direction * carousel.tiltAngle * normalizedDepth
+        view.rotation = rotation
+    }
+
+    private fun resolveCarouselDirectionSign(orientation: CarouselOrientation): Float {
+        return when (orientation) {
+            CarouselOrientation.Vertical -> when (cardStackSetting.stackFrom) {
+                StackFrom.Top, StackFrom.TopAndLeft, StackFrom.TopAndRight -> -1f
+                else -> 1f
+            }
+
+            CarouselOrientation.Horizontal -> when (cardStackSetting.stackFrom) {
+                StackFrom.Left, StackFrom.TopAndLeft, StackFrom.BottomAndLeft -> -1f
+                else -> 1f
+            }
+        }
+    }
+
     private fun updateRotation(view: View) {
+        if (width == 0) {
+            view.rotation = 0.0f
+            return
+        }
         val degree =
             cardStackState.dx * cardStackSetting.maxDegree / width * cardStackState.proportion
         view.rotation = degree
@@ -400,6 +543,8 @@ class CardStackLayoutManager
 
     private fun resetRotation(view: View) {
         view.rotation = 0.0f
+        view.rotationX = 0.0f
+        view.rotationY = 0.0f
     }
 
     private fun updateOverlay(view: View) {
@@ -410,6 +555,14 @@ class CardStackLayoutManager
             Direction.Bottom to R.id.bottom_overlay
         )
         
+        // Icon IDs for each overlay direction (optional, may not exist in all layouts)
+        val overlayIconIds = mapOf(
+            Direction.Left to getResourceId(view, "left_overlay_icon"),
+            Direction.Right to getResourceId(view, "right_overlay_icon"),
+            Direction.Top to getResourceId(view, "top_overlay_icon"),
+            Direction.Bottom to getResourceId(view, "bottom_overlay_icon")
+        )
+
         // Reset all overlays
         listOf(
             R.id.left_overlay,
@@ -422,10 +575,51 @@ class CardStackLayoutManager
         
         val direction = cardStackState.direction
         val alpha = cardStackSetting.overlayInterpolator.getInterpolation(cardStackState.ratio)
-        
+        val isRewindDirection = cardStackSetting.manualRewindDirections.contains(direction)
+
         overlays[direction]?.let { overlayId ->
-            view.findViewById<View>(overlayId)?.alpha = alpha
+            val overlayView = view.findViewById<View>(overlayId)
+            overlayView?.alpha = alpha
+
+            // Update icon if it's a rewind direction and icon ID exists
+            overlayIconIds[direction]?.takeIf { it != 0 }?.let { iconId ->
+                view.findViewById<android.widget.ImageView>(iconId)?.let { imageView ->
+                    if (isRewindDirection) {
+                        // Set rewind icon if available
+                        val rewindIconId = view.context.resources.getIdentifier(
+                            "rewind_white_120dp",
+                            "drawable",
+                            view.context.packageName
+                        )
+                        if (rewindIconId != 0) {
+                            imageView.setImageResource(rewindIconId)
+                        }
+                    } else {
+                        // Reset to default icon based on direction
+                        val defaultIconName = when (direction) {
+                            Direction.Left, Direction.Bottom -> "skip_white_120dp"
+                            Direction.Right, Direction.Top -> "like_white_120dp"
+                        }
+                        val defaultIconId = view.context.resources.getIdentifier(
+                            defaultIconName,
+                            "drawable",
+                            view.context.packageName
+                        )
+                        if (defaultIconId != 0) {
+                            imageView.setImageResource(defaultIconId)
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    private fun getResourceId(view: View, resourceName: String): Int {
+        return view.context.resources.getIdentifier(
+            resourceName,
+            "id",
+            view.context.packageName
+        )
     }
 
     private fun resetOverlay(view: View) {
@@ -456,7 +650,13 @@ class CardStackLayoutManager
         startSmoothScroll(scroller)
     }
 
-    private fun smoothScrollToPrevious(position: Int) {
+    private fun smoothScrollToPrevious(
+        position: Int,
+        scrollType: CardStackSmoothScroller.ScrollType = CardStackSmoothScroller.ScrollType.AutomaticRewind
+    ) {
+        if (position < 0) {
+            return
+        }
         val topView = topView
         if (topView != null) {
             cardStackListener.onCardDisappeared(this.topView, cardStackState.topPosition)
@@ -465,8 +665,7 @@ class CardStackLayoutManager
         cardStackState.proportion = 0.0f
         cardStackState.targetPosition = position
         cardStackState.topPosition--
-        val scroller =
-            CardStackSmoothScroller(CardStackSmoothScroller.ScrollType.AutomaticRewind, this)
+        val scroller = CardStackSmoothScroller(scrollType, this)
         scroller.targetPosition = cardStackState.topPosition
         startSmoothScroll(scroller)
     }
@@ -482,6 +681,18 @@ class CardStackLayoutManager
 
     fun setStackFrom(stackFrom: StackFrom) {
         cardStackSetting.stackFrom = stackFrom
+    }
+
+    fun setStackLayout(stackLayout: StackLayout) {
+        cardStackSetting.stackLayout = stackLayout
+    }
+
+    fun setStackStyle(stackStyle: CardStackStyle) {
+        cardStackSetting.stackStyle = stackStyle
+    }
+
+    fun setCarouselSetting(carouselSetting: CarouselSetting) {
+        cardStackSetting.carouselSetting = carouselSetting
     }
 
     fun setVisibleCount(@IntRange(from = 1) visibleCount: Int) {
@@ -510,6 +721,7 @@ class CardStackLayoutManager
     }
 
     fun setDirections(directions: List<Direction>) {
+        ensureDistinctDirections(directions, cardStackSetting.manualRewindDirections)
         cardStackSetting.directions = directions
     }
 
@@ -521,8 +733,29 @@ class CardStackLayoutManager
         cardStackSetting.canScrollVertical = canScrollVertical
     }
 
+    fun setCanScrollLeft(canScrollLeft: Boolean) {
+        cardStackSetting.canScrollLeft = canScrollLeft
+    }
+
+    fun setCanScrollRight(canScrollRight: Boolean) {
+        cardStackSetting.canScrollRight = canScrollRight
+    }
+
+    fun setCanScrollUp(canScrollUp: Boolean) {
+        cardStackSetting.canScrollUp = canScrollUp
+    }
+
+    fun setCanScrollDown(canScrollDown: Boolean) {
+        cardStackSetting.canScrollDown = canScrollDown
+    }
+
     fun setSwipeableMethod(swipeableMethod: SwipeableMethod) {
         cardStackSetting.swipeableMethod = swipeableMethod
+    }
+
+    fun setManualRewindDirections(directions: List<Direction>) {
+        ensureDistinctDirections(cardStackSetting.directions, directions)
+        cardStackSetting.manualRewindDirections = directions
     }
 
     fun setSwipeAnimationSetting(swipeAnimationSetting: SwipeAnimationSetting) {
@@ -535,6 +768,58 @@ class CardStackLayoutManager
 
     fun setOverlayInterpolator(overlayInterpolator: Interpolator) {
         cardStackSetting.overlayInterpolator = overlayInterpolator
+    }
+
+    private fun isManualHorizontalScrollAllowed(dx: Int): Boolean {
+        if (!cardStackSetting.canScrollHorizontal) {
+            return false
+        }
+        if (dx == 0) {
+            return true
+        }
+        return when {
+            dx > 0 -> cardStackSetting.canScrollLeft
+            dx < 0 -> cardStackSetting.canScrollRight
+            else -> true
+        }
+    }
+
+    private fun isManualVerticalScrollAllowed(dy: Int): Boolean {
+        if (!cardStackSetting.canScrollVertical) {
+            return false
+        }
+        if (dy == 0) {
+            return true
+        }
+        return when {
+            dy > 0 -> cardStackSetting.canScrollUp
+            dy < 0 -> cardStackSetting.canScrollDown
+            else -> true
+        }
+    }
+
+    private fun ensureDistinctDirections(
+        swipeDirections: List<Direction>,
+        rewindDirections: List<Direction>
+    ) {
+        val conflict = swipeDirections.intersect(rewindDirections.toSet())
+        require(conflict.isEmpty()) {
+            "Swipe directions and manual rewind directions must not overlap: $conflict"
+        }
+    }
+
+    fun rewindFromDrag() {
+        if (!cardStackSetting.swipeableMethod.canSwipeManually()) {
+            return
+        }
+        val previousPosition = cardStackState.topPosition - 1
+        if (previousPosition < 0) {
+            return
+        }
+        smoothScrollToPrevious(
+            previousPosition,
+            CardStackSmoothScroller.ScrollType.ManualRewind
+        )
     }
 
     fun setLastItemAppearingAnimationDuration(@IntRange(from = 0) duration: Int) {

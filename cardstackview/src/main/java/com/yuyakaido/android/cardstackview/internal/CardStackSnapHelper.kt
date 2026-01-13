@@ -28,7 +28,20 @@ class CardStackSnapHelper : SnapHelper() {
                     val duration = fromVelocity(if (velocityY < velocityX) velocityX else velocityY)
                     if (duration == Duration.Fast || setting.swipeThreshold < horizontal || setting.swipeThreshold < vertical) {
                         val state = layoutManager.cardStackState
-                        if (setting.directions.contains(state.direction)) {
+                        val direction = state.direction
+
+                        val shouldManualRewind =
+                            setting.manualRewindDirections.contains(direction) &&
+                                    state.topPosition > 0
+
+                        if (shouldManualRewind) {
+                            this.velocityX = 0
+                            this.velocityY = 0
+                            layoutManager.rewindFromDrag()
+                            return IntArray(2)
+                        }
+
+                        if (setting.directions.contains(direction)) {
                             state.targetPosition = state.topPosition + 1
 
                             val swipeAnimationSetting = SwipeAnimationSetting.Builder()
