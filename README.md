@@ -182,6 +182,17 @@ You can implement reloading by calling `RecyclerView.Adapter.notifyDataSetChange
 CardStackLayoutManager.setStackFrom(StackFrom.None)
 ```
 
+## Stack Layout
+
+Choose whether cards overlap each other (`StackLayout.Overlay`, default) or line up sequentially like a vertical/horizontal RecyclerView (`StackLayout.Linear`). When using the linear mode the `translationInterval` value becomes the spacing between cards.
+
+```kotlin
+manager.setStackLayout(StackLayout.Linear)
+manager.setStackFrom(StackFrom.Bottom)   // cards rise from the bottom
+manager.setTranslationInterval(12f)      // spacing in dp between items
+manager.setScaleInterval(1.0f)           // optional: keep card sizes identical
+```
+
 ## Visible Count
 
 | Default | Value |                                                   Sample                                                    |

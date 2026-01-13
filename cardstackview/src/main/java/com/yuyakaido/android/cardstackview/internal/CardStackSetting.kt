@@ -5,11 +5,13 @@ import android.view.animation.LinearInterpolator
 import com.yuyakaido.android.cardstackview.Direction
 import com.yuyakaido.android.cardstackview.RewindAnimationSetting
 import com.yuyakaido.android.cardstackview.StackFrom
+import com.yuyakaido.android.cardstackview.StackLayout
 import com.yuyakaido.android.cardstackview.SwipeAnimationSetting
 import com.yuyakaido.android.cardstackview.SwipeableMethod
 
 class CardStackSetting {
     var stackFrom: StackFrom = StackFrom.None
+    var stackLayout: StackLayout = StackLayout.Overlay
     var visibleCount: Int = 3
     var translationInterval: Float = 8.0f
     var scaleInterval: Float = 0.95f // 0.0f - 1.0f
