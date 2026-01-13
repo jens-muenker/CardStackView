@@ -113,7 +113,7 @@ manager.setManualRewindDirections(listOf(Direction.Bottom))
 
 When the user swipes in one of the configured `manualRewindDirections`, the previous card is animated back onto the stack (if available) instead of removing the current card again.
 
-> Hinweis: `manualRewindDirections` dürfen keine Richtung enthalten, die bereits in `setDirections(...)` freigegeben wurde. In diesem Fall wirft der LayoutManager eine `IllegalArgumentException`, damit Swipe- und Rewind-Gesten eindeutig bleiben.
+> **Note:** `manualRewindDirections` must not contain any direction that is already enabled in `setDirections(...)`. In this case, the LayoutManager throws an `IllegalArgumentException` to ensure swipe and rewind gestures remain distinct.
 
 ## Overlay View
 
