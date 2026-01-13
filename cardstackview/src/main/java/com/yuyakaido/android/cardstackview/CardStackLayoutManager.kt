@@ -20,8 +20,7 @@ import com.yuyakaido.android.cardstackview.internal.CardStackSmoothScroller
 import com.yuyakaido.android.cardstackview.internal.CardStackState
 import com.yuyakaido.android.cardstackview.internal.DisplayUtil
 
-class CardStackLayoutManager
-@JvmOverloads constructor(
+class CardStackLayoutManager @JvmOverloads constructor(
     private val context: Context,
     listener: CardStackListener = CardStackListener.DEFAULT
 ) : RecyclerView.LayoutManager(), ScrollVectorProvider {
@@ -206,7 +205,11 @@ class CardStackLayoutManager
             val view = findViewByPosition(topPosition)
             if (view != null) {
                 val half = height / 2.0f
-                cardStackState.proportion = -(y - half - view.top) / half
+                if (half == 0f) {
+                    cardStackState.proportion = 0.0f
+                } else {
+                    cardStackState.proportion = -(y - half - view.top) / half
+                }
             }
         }
     }
@@ -228,7 +231,7 @@ class CardStackLayoutManager
             // 4. Swipe A
             // 5. Display only one card on the screen (let this card be B)
             // 6. After paging is complete, B should be displayed, but A appears on the screen
-            removeAndRecycleView(topView!!, recycler)
+            topView?.let { removeAndRecycleView(it, recycler) }
 
             val direction = cardStackState.direction
 
@@ -448,10 +451,10 @@ class CardStackLayoutManager
             StackFrom.Bottom -> view.scaleX = targetScale
             StackFrom.BottomAndLeft -> view.scaleX = targetScale
             StackFrom.BottomAndRight -> view.scaleX = targetScale
-            StackFrom.Left ->                 // TODO Should handle ScaleX
+            StackFrom.Left ->                 // TODO: Should handle ScaleX
                 view.scaleY = targetScale
 
-            StackFrom.Right ->                 // TODO Should handle ScaleX
+            StackFrom.Right ->                 // TODO: Should handle ScaleX
                 view.scaleY = targetScale
         }
     }
@@ -509,6 +512,10 @@ class CardStackLayoutManager
     }
 
     private fun updateRotation(view: View) {
+        if (width == 0) {
+            view.rotation = 0.0f
+            return
+        }
         val degree =
             cardStackState.dx * cardStackSetting.maxDegree / width * cardStackState.proportion
         view.rotation = degree

@@ -9,9 +9,9 @@ enum class CarouselOrientation {
 
 data class CarouselSetting @JvmOverloads constructor(
     val orientation: CarouselOrientation = CarouselOrientation.Vertical,
-    @FloatRange(from = 0.0) val scaleMultiplier: Float = 0.15f,
-    @FloatRange(from = 0.0, to = 1.0) val minScale: Float = 0.6f,
-    @FloatRange(from = 0.0, to = 90.0) val tiltAngle: Float = 8f
+    @param:FloatRange(from = 0.0) val scaleMultiplier: Float = 0.15f,
+    @param:FloatRange(from = 0.0, to = 1.0) val minScale: Float = 0.6f,
+    @param:FloatRange(from = 0.0, to = 90.0) val tiltAngle: Float = 8f
 ) {
     init {
         require(scaleMultiplier >= 0f) { "Carousel scaleMultiplier must be greater than or equal to 0." }
