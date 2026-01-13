@@ -37,4 +37,5 @@ class CardStackSetting {
     @JvmField
     var rewindAnimationSetting: RewindAnimationSetting = RewindAnimationSetting.Builder().build()
     var overlayInterpolator: Interpolator = LinearInterpolator()
+    var lastItemAppearingAnimationDuration: Int = 150
 }

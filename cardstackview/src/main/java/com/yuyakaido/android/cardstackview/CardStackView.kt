@@ -32,9 +32,9 @@ class CardStackView @JvmOverloads constructor(
         if (layoutManager == null) {
             layoutManager = CardStackLayoutManager(context)
         }
-        if (getAdapter() != null) {
-            getAdapter()!!.unregisterAdapterDataObserver(observer)
-            getAdapter()!!.onDetachedFromRecyclerView(this)
+        getAdapter()?.let { currentAdapter ->
+            currentAdapter.unregisterAdapterDataObserver(observer)
+            currentAdapter.onDetachedFromRecyclerView(this)
         }
         adapter?.registerAdapterDataObserver(observer)
         super.setAdapter(adapter)

@@ -177,6 +177,16 @@ You can implement paging by using following two ways.
 
 You should **NOT** call `RecyclerView.Adapter.notifyDataSetChanged` for paging because this method will reset top position and maybe occur a performance issue.
 
+## Last Item Appearing Animation
+
+When new items are appended and the final card becomes visible, it can fade in smoothly instead of popping into place.
+
+```kotlin
+CardStackLayoutManager.setLastItemAppearingAnimationDuration(150)
+```
+
+Set the duration to `0` to disable the animation. By default, 150ms is used.
+
 ## Reloading
 
 You can implement reloading by calling `RecyclerView.Adapter.notifyDataSetChanged`.
@@ -358,6 +368,7 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 | CardStackLayoutManager.setCanScrollDown(boolean canScrollDown)                                  | You can enable or disable dragging down.    |
 | CardStackLayoutManager.setSwipeAnimationSetting(SwipeAnimationSetting swipeAnimationSetting)    | You can set SwipeAnimationSetting.          |
 | CardStackLayoutManager.setRewindAnimationSetting(RewindAnimationSetting rewindAnimationSetting) | You can set RewindAnimationSetting.         |
+| CardStackLayoutManager.setLastItemAppearingAnimationDuration(int duration)                      | You can adjust the fade-in of the last card. |
 | CardStackLayoutManager.setOverlayInterpolator(Interpolator overlayInterpolator)                  | You can set OverlayInterpolator.            |
 
 ## Advanced usages
@@ -426,6 +437,7 @@ This approach gives you full control over when manual swipes are allowed while s
 - added unittests
 - updated to newest gradle version
 - updated libraries to newest versions
+- added configurable fade-in animation for the last card when new data appears
 
 **3.0.0**
 - updated to newest gradle version

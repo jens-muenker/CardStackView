@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView.SmoothScroller.ScrollVectorProv
 import com.yuyakaido.android.cardstackview.CardStackStyle
 import com.yuyakaido.android.cardstackview.CarouselOrientation
 import com.yuyakaido.android.cardstackview.CarouselSetting
+import com.yuyakaido.android.cardstackview.internal.CardStackAnimatorListener
 import com.yuyakaido.android.cardstackview.internal.CardStackSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackSmoothScroller
 import com.yuyakaido.android.cardstackview.internal.CardStackState
@@ -333,6 +334,7 @@ class CardStackLayoutManager @JvmOverloads constructor(
                 }
                 resetOverlay(child)
             }
+            handleLastItemAppearingAnimation(child, i)
             i++
         }
 
@@ -469,11 +471,17 @@ class CardStackLayoutManager @JvmOverloads constructor(
             StackFrom.Bottom -> view.scaleX = targetScale
             StackFrom.BottomAndLeft -> view.scaleX = targetScale
             StackFrom.BottomAndRight -> view.scaleX = targetScale
-            StackFrom.Left ->                 // TODO: Should handle ScaleX
+            StackFrom.Left -> {
+                // Note: Only scaleY is applied for Left direction
+                // ScaleX handling may be added in future versions
                 view.scaleY = targetScale
+            }
 
-            StackFrom.Right ->                 // TODO: Should handle ScaleX
+            StackFrom.Right -> {
+                // Note: Only scaleY is applied for Right direction
+                // ScaleX handling may be added in future versions
                 view.scaleY = targetScale
+            }
         }
     }
 
@@ -560,7 +568,7 @@ class CardStackLayoutManager @JvmOverloads constructor(
             Direction.Top to getResourceId(view, "top_overlay_icon"),
             Direction.Bottom to getResourceId(view, "bottom_overlay_icon")
         )
-        
+
         // Reset all overlays
         listOf(
             R.id.left_overlay,
@@ -574,11 +582,11 @@ class CardStackLayoutManager @JvmOverloads constructor(
         val direction = cardStackState.direction
         val alpha = cardStackSetting.overlayInterpolator.getInterpolation(cardStackState.ratio)
         val isRewindDirection = cardStackSetting.manualRewindDirections.contains(direction)
-        
+
         overlays[direction]?.let { overlayId ->
             val overlayView = view.findViewById<View>(overlayId)
             overlayView?.alpha = alpha
-            
+
             // Update icon if it's a rewind direction and icon ID exists
             overlayIconIds[direction]?.takeIf { it != 0 }?.let { iconId ->
                 view.findViewById<android.widget.ImageView>(iconId)?.let { imageView ->
@@ -611,7 +619,7 @@ class CardStackLayoutManager @JvmOverloads constructor(
             }
         }
     }
-    
+
     private fun getResourceId(view: View, resourceName: String): Int {
         return view.context.resources.getIdentifier(
             resourceName,
@@ -699,22 +707,22 @@ class CardStackLayoutManager @JvmOverloads constructor(
     }
 
     fun setTranslationInterval(@FloatRange(from = 0.0) translationInterval: Float) {
-        require(!(translationInterval < 0.0f)) { "TranslationInterval must be greater than or equal 0.0f" }
+        require(translationInterval >= 0.0f) { "TranslationInterval must be greater than or equal 0.0f" }
         cardStackSetting.translationInterval = translationInterval
     }
 
     fun setScaleInterval(@FloatRange(from = 0.0) scaleInterval: Float) {
-        require(!(scaleInterval < 0.0f)) { "ScaleInterval must be greater than or equal 0.0f." }
+        require(scaleInterval >= 0.0f) { "ScaleInterval must be greater than or equal 0.0f." }
         cardStackSetting.scaleInterval = scaleInterval
     }
 
     fun setSwipeThreshold(@FloatRange(from = 0.0, to = 1.0) swipeThreshold: Float) {
-        require(!(swipeThreshold < 0.0f || 1.0f < swipeThreshold)) { "SwipeThreshold must be 0.0f to 1.0f." }
+        require(swipeThreshold in 0.0f..1.0f) { "SwipeThreshold must be 0.0f to 1.0f." }
         cardStackSetting.swipeThreshold = swipeThreshold
     }
 
     fun setMaxDegree(@FloatRange(from = (-360.0f).toDouble(), to = 360.0) maxDegree: Float) {
-        require(!(maxDegree < -360.0f || 360.0f < maxDegree)) { "MaxDegree must be -360.0f to 360.0f" }
+        require(maxDegree in -360.0f..360.0f) { "MaxDegree must be -360.0f to 360.0f" }
         cardStackSetting.maxDegree = maxDegree
     }
 
@@ -818,5 +826,59 @@ class CardStackLayoutManager @JvmOverloads constructor(
             previousPosition,
             CardStackSmoothScroller.ScrollType.ManualRewind
         )
+    }
+
+    /**
+     * Sets the duration for the fade-in animation when the last item appears.
+     * Set to 0 to disable the animation.
+     *
+     * @param duration Animation duration in milliseconds (must be >= 0)
+     */
+    fun setLastItemAppearingAnimationDuration(@IntRange(from = 0) duration: Int) {
+        require(duration >= 0) { "Duration must be greater than or equal to 0." }
+        cardStackSetting.lastItemAppearingAnimationDuration = duration
+    }
+
+    /**
+     * Handles the appearing animation for the last item in the adapter.
+     * If the animation duration is set (> 0), the last item will fade in when it first appears.
+     *
+     * @param view The view to animate
+     * @param position The adapter position of the view
+     */
+    private fun handleLastItemAppearingAnimation(view: View, position: Int) {
+        val duration = cardStackSetting.lastItemAppearingAnimationDuration
+        
+        // Early return if animation is disabled or no items exist
+        if (duration <= 0 || itemCount == 0) {
+            view.alpha = 1f
+            return
+        }
+
+        val isLastAdapterPosition = position == itemCount - 1
+        
+        // Handle non-last items: ensure alpha is 1 unless last item animation is in progress
+        if (!isLastAdapterPosition) {
+            if (!cardStackState.isLastChildOnAnimation) {
+                view.alpha = 1f
+            }
+            return
+        }
+
+        // Handle last item: skip animation if already animated or currently animating
+        if (cardStackState.isLastChildWasAnimated || cardStackState.isLastChildOnAnimation) {
+            view.alpha = 1f
+            return
+        }
+
+        // Start fade-in animation for the last item
+        cardStackState.isLastChildOnAnimation = true
+        view.animate().cancel()
+        view.alpha = 0f
+        view.animate()
+            .alpha(1f)
+            .setDuration(duration.toLong())
+            .setListener(CardStackAnimatorListener(view, cardStackState))
+            .start()
     }
 }

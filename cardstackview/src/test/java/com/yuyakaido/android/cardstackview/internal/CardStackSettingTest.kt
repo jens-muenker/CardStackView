@@ -44,6 +44,7 @@ class CardStackSettingTest {
         assertNotNull(cardStackSetting.swipeAnimationSetting)
         assertNotNull(cardStackSetting.rewindAnimationSetting)
         assertTrue(cardStackSetting.overlayInterpolator is LinearInterpolator)
+        assertEquals(150, cardStackSetting.lastItemAppearingAnimationDuration)
     }
 
     @Test
@@ -162,5 +163,12 @@ class CardStackSettingTest {
         val customInterpolator = LinearInterpolator()
         cardStackSetting.overlayInterpolator = customInterpolator
         assertEquals(customInterpolator, cardStackSetting.overlayInterpolator)
+    }
+
+    @Test
+    fun `lastItemAppearingAnimationDuration should be settable`() {
+        val customDuration = 250
+        cardStackSetting.lastItemAppearingAnimationDuration = customDuration
+        assertEquals(customDuration, cardStackSetting.lastItemAppearingAnimationDuration)
     }
 }
