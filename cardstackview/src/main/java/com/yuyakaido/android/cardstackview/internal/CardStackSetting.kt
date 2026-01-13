@@ -7,11 +7,13 @@ import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.Direction
 import com.yuyakaido.android.cardstackview.RewindAnimationSetting
 import com.yuyakaido.android.cardstackview.StackFrom
+import com.yuyakaido.android.cardstackview.StackLayout
 import com.yuyakaido.android.cardstackview.SwipeAnimationSetting
 import com.yuyakaido.android.cardstackview.SwipeableMethod
 
 class CardStackSetting {
     var stackFrom: StackFrom = StackFrom.None
+    var stackLayout: StackLayout = StackLayout.Overlay
     var stackStyle: CardStackStyle = CardStackStyle.Stack
     var carouselSetting: CarouselSetting = CarouselSetting()
     var visibleCount: Int = 3

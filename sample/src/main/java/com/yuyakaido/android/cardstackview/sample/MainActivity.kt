@@ -97,6 +97,14 @@ class MainActivity : AppCompatActivity(), CardStackListener {
                 R.id.remove_spot_from_last -> removeLast(1)
                 R.id.replace_first_spot -> replace()
                 R.id.swap_first_for_last -> swap()
+                R.id.apply_default_stack -> {
+                    applyDefaultStackAppearance()
+                    cardStackView.layoutManager?.requestLayout()
+                }
+                R.id.apply_vertical_stack -> {
+                    applyVerticalStackAppearance()
+                    cardStackView.layoutManager?.requestLayout()
+                }
                 R.id.toggle_carousel -> {
                     isCarouselStyleEnabled = !isCarouselStyleEnabled
                     applyStackStyle()
@@ -116,8 +124,14 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     private fun setupButton() {
         val skip = findViewById<View>(R.id.skip_button)
         skip.setOnClickListener {
+            // Wähle Richtung basierend auf aktueller Konfiguration
+            val direction = if (manager.cardStackSetting.directions.contains(Direction.Left)) {
+                Direction.Left  // Horizontale Swipes
+            } else {
+                Direction.Bottom  // Vertikale Swipes (nach unten = Skip/Dislike)
+            }
             val setting = SwipeAnimationSetting.Builder()
-                    .setDirection(Direction.Left)
+                    .setDirection(direction)
                     .setDuration(Duration.Normal.duration)
                     .setInterpolator(AccelerateInterpolator())
                     .build()
@@ -138,8 +152,14 @@ class MainActivity : AppCompatActivity(), CardStackListener {
 
         val like = findViewById<View>(R.id.like_button)
         like.setOnClickListener {
+            // Wähle Richtung basierend auf aktueller Konfiguration
+            val direction = if (manager.cardStackSetting.directions.contains(Direction.Right)) {
+                Direction.Right  // Horizontale Swipes
+            } else {
+                Direction.Top  // Vertikale Swipes (nach oben = Like)
+            }
             val setting = SwipeAnimationSetting.Builder()
-                    .setDirection(Direction.Right)
+                    .setDirection(direction)
                     .setDuration(Duration.Normal.duration)
                     .setInterpolator(AccelerateInterpolator())
                     .build()
@@ -149,12 +169,40 @@ class MainActivity : AppCompatActivity(), CardStackListener {
     }
 
     private fun initialize() {
+        applyDefaultStackAppearance()
+        cardStackView.layoutManager = manager
+        cardStackView.adapter = adapter
+        cardStackView.itemAnimator.apply {
+            if (this is DefaultItemAnimator) {
+                supportsChangeAnimations = false
+            }
+        }
+    }
+
+    private fun applyDefaultStackAppearance() {
+        manager.setStackLayout(StackLayout.Overlay)
+        manager.setStackFrom(StackFrom.None)
         manager.setVisibleCount(3)
         manager.setScaleInterval(0.95f)
         manager.setSwipeThreshold(0.3f)
         manager.setMaxDegree(20.0f)
         manager.setDirections(Direction.HORIZONTAL)
         manager.setCanScrollHorizontal(true)
+        manager.setCanScrollVertical(true)
+        manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
+        manager.setOverlayInterpolator(LinearInterpolator())
+    }
+
+    private fun applyVerticalStackAppearance() {
+        manager.setStackLayout(StackLayout.Linear)
+        manager.setStackFrom(StackFrom.Bottom)
+        manager.setVisibleCount(4)
+        manager.setTranslationInterval(12f)
+        manager.setScaleInterval(1.0f)
+        manager.setSwipeThreshold(0.25f)
+        manager.setMaxDegree(0.0f)
+        manager.setDirections(Direction.VERTICAL)
+        manager.setCanScrollHorizontal(false)
         manager.setCanScrollVertical(true)
         manager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
         manager.setOverlayInterpolator(LinearInterpolator())

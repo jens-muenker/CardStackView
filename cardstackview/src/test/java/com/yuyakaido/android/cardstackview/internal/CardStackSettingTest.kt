@@ -6,6 +6,7 @@ import com.yuyakaido.android.cardstackview.CarouselOrientation
 import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.Direction
 import com.yuyakaido.android.cardstackview.StackFrom
+import com.yuyakaido.android.cardstackview.StackLayout
 import com.yuyakaido.android.cardstackview.SwipeableMethod
 import org.junit.Before
 import org.junit.Test
@@ -27,6 +28,7 @@ class CardStackSettingTest {
         assertEquals(CarouselSetting(), cardStackSetting.carouselSetting)
         assertEquals(3, cardStackSetting.visibleCount)
         assertEquals(8.0f, cardStackSetting.translationInterval, 0.01f)
+        assertEquals(StackLayout.Overlay, cardStackSetting.stackLayout)
         assertEquals(0.95f, cardStackSetting.scaleInterval, 0.01f)
         assertEquals(0.3f, cardStackSetting.swipeThreshold, 0.01f)
         assertEquals(20.0f, cardStackSetting.maxDegree, 0.01f)
@@ -43,6 +45,12 @@ class CardStackSettingTest {
     fun `stackFrom should be settable`() {
         cardStackSetting.stackFrom = StackFrom.Top
         assertEquals(StackFrom.Top, cardStackSetting.stackFrom)
+    }
+
+    @Test
+    fun `stackLayout should be settable`() {
+        cardStackSetting.stackLayout = StackLayout.Linear
+        assertEquals(StackLayout.Linear, cardStackSetting.stackLayout)
     }
 
     @Test

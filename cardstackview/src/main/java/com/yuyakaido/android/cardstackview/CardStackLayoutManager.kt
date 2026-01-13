@@ -326,6 +326,13 @@ class CardStackLayoutManager
     }
 
     private fun updateTranslation(view: View, index: Int) {
+        when (cardStackSetting.stackLayout) {
+            StackLayout.Linear -> updateLinearTranslation(view, index)
+            StackLayout.Overlay -> updateOverlayTranslation(view, index)
+        }
+    }
+
+    private fun updateOverlayTranslation(view: View, index: Int) {
         val nextIndex = index - 1
         val translationPx = DisplayUtil.dpToPx(context, cardStackSetting.translationInterval)
         val currentTranslation = (index * translationPx).toFloat()
@@ -358,6 +365,64 @@ class CardStackLayoutManager
 
             StackFrom.Left -> view.translationX = -targetTranslation
             StackFrom.Right -> view.translationX = targetTranslation
+        }
+    }
+
+    private fun updateLinearTranslation(view: View, index: Int) {
+        val nextIndex = index - 1
+        if (nextIndex < 0) {
+            return
+        }
+        if (cardStackSetting.stackFrom == StackFrom.None) {
+            updateOverlayTranslation(view, index)
+            return
+        }
+
+        val spacingPx = DisplayUtil.dpToPx(context, cardStackSetting.translationInterval)
+        val spacing = spacingPx.toFloat()
+        val decoratedHeight = getDecoratedMeasuredHeight(view)
+        val decoratedWidth = getDecoratedMeasuredWidth(view)
+        val verticalStep = decoratedHeight + spacing
+        val horizontalStep = decoratedWidth + spacing
+
+        val currentVerticalTranslation = (index * verticalStep)
+        val nextVerticalTranslation = (nextIndex * verticalStep)
+        val targetVertical = currentVerticalTranslation -
+            (currentVerticalTranslation - nextVerticalTranslation) * cardStackState.ratio
+
+        val currentHorizontalTranslation = (index * horizontalStep)
+        val nextHorizontalTranslation = (nextIndex * horizontalStep)
+        val targetHorizontal = currentHorizontalTranslation -
+            (currentHorizontalTranslation - nextHorizontalTranslation) * cardStackState.ratio
+
+        when (cardStackSetting.stackFrom) {
+            StackFrom.Top -> view.translationY = -targetVertical
+            StackFrom.Bottom -> view.translationY = targetVertical
+            StackFrom.Left -> view.translationX = -targetHorizontal
+            StackFrom.Right -> view.translationX = targetHorizontal
+            StackFrom.TopAndLeft -> {
+                view.translationY = -targetVertical
+                view.translationX = -targetHorizontal
+            }
+
+            StackFrom.TopAndRight -> {
+                view.translationY = -targetVertical
+                view.translationX = targetHorizontal
+            }
+
+            StackFrom.BottomAndLeft -> {
+                view.translationY = targetVertical
+                view.translationX = -targetHorizontal
+            }
+
+            StackFrom.BottomAndRight -> {
+                view.translationY = targetVertical
+                view.translationX = targetHorizontal
+            }
+
+            StackFrom.None -> {
+                // Already handled above.
+            }
         }
     }
 
@@ -535,6 +600,10 @@ class CardStackLayoutManager
 
     fun setStackFrom(stackFrom: StackFrom) {
         cardStackSetting.stackFrom = stackFrom
+    }
+
+    fun setStackLayout(stackLayout: StackLayout) {
+        cardStackSetting.stackLayout = stackLayout
     }
 
     fun setStackStyle(stackStyle: CardStackStyle) {

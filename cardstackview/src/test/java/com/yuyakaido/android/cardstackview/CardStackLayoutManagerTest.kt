@@ -8,6 +8,7 @@ import com.yuyakaido.android.cardstackview.CardStackStyle
 import com.yuyakaido.android.cardstackview.CarouselOrientation
 import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackState
+import com.yuyakaido.android.cardstackview.StackLayout
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
@@ -123,6 +124,12 @@ class CardStackLayoutManagerTest {
     fun `setStackFrom should update setting`() {
         layoutManager.setStackFrom(StackFrom.Top)
         assertEquals(StackFrom.Top, layoutManager.cardStackSetting.stackFrom)
+    }
+
+    @Test
+    fun `setStackLayout should update setting`() {
+        layoutManager.setStackLayout(StackLayout.Linear)
+        assertEquals(StackLayout.Linear, layoutManager.cardStackSetting.stackLayout)
     }
 
     @Test
