@@ -96,6 +96,9 @@ class CardStackLayoutManager @JvmOverloads constructor(
 
             CardStackState.Status.AutomaticSwipeAnimated -> {}
             CardStackState.Status.ManualSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualHorizontalScrollAllowed(dx)) {
+                    return 0
+                }
                 cardStackState.dx -= dx
                 update(recycler)
                 return dx
@@ -146,6 +149,9 @@ class CardStackLayoutManager @JvmOverloads constructor(
 
             CardStackState.Status.AutomaticSwipeAnimated -> {}
             CardStackState.Status.ManualSwipeAnimating -> if (cardStackSetting.swipeableMethod.canSwipeManually()) {
+                if (!isManualVerticalScrollAllowed(dy)) {
+                    return 0
+                }
                 cardStackState.dy -= dy
                 update(recycler)
                 return dy
