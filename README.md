@@ -295,7 +295,45 @@ CardStackLayoutManager.setSwipeableMethod(SwipeableMethod.AutomaticAndManual)
 | CardStackListener.onCardAppeared(View view, int position)          | This method is called when the card appeared.                       |
 | CardStackListener.onCardDisappeared(View view, int position)       | This method is called when the card disappeared.                    |
 
+# Wichtige Funktionen
+
+## Automatisches Zurücksetzen von Scroll-Positionen
+
+CardStackView setzt automatisch die Scroll-Positionen von verschachtelten scrollbaren Views zurück, wenn eine Karte recycelt wird. Dies verhindert, dass Scroll-Zustände zwischen verschiedenen Karten "durchbluten".
+
+### Problem
+
+Wenn RecyclerView Views recycelt, werden standardmäßig die Scroll-Positionen von verschachtelten ScrollViews, NestedScrollViews oder HorizontalScrollViews nicht zurückgesetzt. Dies kann dazu führen, dass:
+- Eine neue Karte mit einer bereits gescrollten Position erscheint
+- Benutzer verwirrt sind, weil der Inhalt nicht am Anfang beginnt
+- Die Benutzererfahrung inkonsistent wird
+
+### Lösung
+
+CardStackView implementiert einen automatischen Mechanismus, der:
+1. Jede recycelte Karte erkennt
+2. Rekursiv durch die gesamte View-Hierarchie der Karte geht
+3. Alle scrollbaren Views (ScrollView, NestedScrollView, HorizontalScrollView) auf Position (0, 0) zurücksetzt
+
+### Verwendung
+
+Diese Funktionalität ist **automatisch aktiviert** und erfordert keine zusätzliche Konfiguration. Wenn du jedoch einen eigenen RecyclerListener benötigst, kannst du ihn wie folgt setzen:
+
+```kotlin
+cardStackView.setRecyclerListener { holder ->
+    // Deine eigene Recycling-Logik
+    // Die Scroll-Zurücksetzung erfolgt automatisch vorher
+}
+```
+
+**Wichtig**: Der interne Scroll-Reset-Mechanismus wird immer zuerst ausgeführt, bevor dein eigener RecyclerListener aufgerufen wird.
+
 # Changelog
+
+**3.1.1**
+- Automatisches Zurücksetzen von Scroll-Positionen bei View-Recycling (Fix für Issue #372)
+- Verhindert Scroll-State-Bleed zwischen Karten
+- Unterstützt ScrollView, NestedScrollView und HorizontalScrollView
 
 **3.1.0**
 - improved code quality

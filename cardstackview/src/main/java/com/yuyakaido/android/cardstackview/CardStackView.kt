@@ -12,6 +12,18 @@ import androidx.core.widget.NestedScrollView
 import com.yuyakaido.android.cardstackview.internal.CardStackDataObserver
 import com.yuyakaido.android.cardstackview.internal.CardStackSnapHelper
 
+/**
+ * Eine spezialisierte RecyclerView für die Darstellung von Karten in einem Stapel.
+ *
+ * CardStackView bietet erweiterte Funktionen wie:
+ * - Karten-Swipe-Gesten
+ * - Automatisches Zurücksetzen von Scroll-Positionen bei Recycling
+ * - Stack-basierte Animationen
+ *
+ * @property context Der Android-Context
+ * @property attrs Optionale XML-Attribute
+ * @property defStyle Optionaler Standard-Style
+ */
 class CardStackView @JvmOverloads constructor(
     context: Context?,
     attrs: AttributeSet? = null,
@@ -21,6 +33,17 @@ class CardStackView @JvmOverloads constructor(
 ) {
     private val observer = CardStackDataObserver(this)
     private var externalRecyclerListener: RecyclerListener? = null
+    
+    /**
+     * Interner RecyclerListener, der den Scroll-Zustand von recycelten Views zurücksetzt.
+     *
+     * Dieser Listener wird automatisch aufgerufen, wenn eine Karte recycelt wird, und
+     * stellt sicher, dass alle verschachtelten scrollbaren Views (ScrollView,
+     * NestedScrollView, HorizontalScrollView) auf ihre Ausgangsposition zurückgesetzt werden.
+     * Dies verhindert, dass Scroll-Positionen zwischen verschiedenen Karten "durchbluten".
+     *
+     * Nach dem Zurücksetzen wird auch der externe RecyclerListener (falls vorhanden) aufgerufen.
+     */
     internal val scrollStateRecyclerListener = RecyclerListener { holder ->
         resetScrollState(holder.itemView)
         externalRecyclerListener?.onViewRecycled(holder)
@@ -58,6 +81,15 @@ class CardStackView @JvmOverloads constructor(
         return super.onInterceptTouchEvent(event)
     }
 
+    /**
+     * Setzt einen externen RecyclerListener.
+     *
+     * Der externe Listener wird nach dem internen Scroll-Reset-Mechanismus aufgerufen.
+     * Dies ermöglicht es, eigene Recycling-Logik hinzuzufügen, während die automatische
+     * Scroll-Zurücksetzung weiterhin funktioniert.
+     *
+     * @param listener Der externe RecyclerListener oder null
+     */
     override fun setRecyclerListener(listener: RecyclerListener?) {
         externalRecyclerListener = listener
     }
@@ -82,6 +114,24 @@ class CardStackView @JvmOverloads constructor(
         super.setRecyclerListener(scrollStateRecyclerListener)
     }
 
+    /**
+     * Setzt den Scroll-Zustand einer View und aller verschachtelten Views rekursiv zurück.
+     *
+     * Diese Methode durchläuft die View-Hierarchie und setzt die Scroll-Position von allen
+     * scrollbaren Views auf (0, 0) zurück. Unterstützte View-Typen sind:
+     * - [ScrollView]: Vertikale Scroll-Views
+     * - [NestedScrollView]: Verschachtelte vertikale Scroll-Views
+     * - [HorizontalScrollView]: Horizontale Scroll-Views
+     *
+     * Die rekursive Verarbeitung stellt sicher, dass auch tief verschachtelte scrollbare
+     * Views zurückgesetzt werden.
+     *
+     * **Zweck**: Verhindert, dass Scroll-Positionen beim View-Recycling zwischen verschiedenen
+     * Karten übertragen werden (Scroll-State-Bleed). Ohne diese Funktion könnte eine Karte
+     * mit einer bereits gescrollten Position erscheinen, wenn die View recycelt wurde.
+     *
+     * @param view Die View, deren Scroll-Zustand zurückgesetzt werden soll
+     */
     private fun resetScrollState(view: View) {
         when (view) {
             is ScrollView -> view.scrollTo(0, 0)
