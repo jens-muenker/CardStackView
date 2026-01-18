@@ -22,7 +22,7 @@ Add the CardStackView dependency to your `build.gradle` (module level):
 
 ```gradle
 dependencies {
-    implementation 'com.github.jens-muenker:CardStackView:<version>'
+    implementation 'com.github.jens-muenker:CardStackView:3.2.0'
 }
 ```
 

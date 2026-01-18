@@ -34,7 +34,7 @@ allprojects {
 }
 
 dependencies {
-    implementation 'com.github.jens-muenker:CardStackView:3.1.0'
+    implementation 'com.github.jens-muenker:CardStackView:3.2.0'
 }
 ```
 
@@ -96,6 +96,23 @@ If this library is helpful to you or your apps, please consider supporting its d
 
 ## 📝 Changelog
 
+### 3.2.0
+**New Features:**
+- 🎨 **Carousel Style** - Carousel-inspired presentation with curves and tilt ([#310](https://github.com/yuyakaido/CardStackView/issues/310))
+- 🔄 **Manual Rewind Gestures** - Configure gestures to bring back previous cards ([#294](https://github.com/yuyakaido/CardStackView/issues/294))
+- 🎯 **Per-Direction Swipe Control** - Enable/disable swiping for individual directions ([#260](https://github.com/yuyakaido/CardStackView/issues/260))
+- 📐 **StackLayout Options** - Linear stacking for sequential card arrangement
+- ✨ **Fade-in Animation** - Configurable animation for the last card when new data appears
+- 📚 **Complete Documentation** - Comprehensive guides, API reference, and FAQ
+
+**Improvements:**
+- Complete documentation overhaul with detailed guides
+- All documentation translated to English
+- Improved code quality and structure
+
+**Fixes:**
+- Division by zero in ratio calculation ([#387](https://github.com/yuyakaido/CardStackView/issues/387))
+
 ### 3.1.0
 - Improved code quality
 - Added unit tests
@@ -103,8 +120,8 @@ If this library is helpful to you or your apps, please consider supporting its d
 - Configurable fade-in animation for last card
 
 ### 3.0.0
-- Updated Gradle & dependencies
 - Migrated code to Kotlin
+- Updated Gradle & dependencies
 
 [→ Full Changelog](CHANGELOG.md)
 
