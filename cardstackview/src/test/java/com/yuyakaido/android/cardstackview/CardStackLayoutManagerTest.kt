@@ -4,7 +4,11 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.yuyakaido.android.cardstackview.CardStackStyle
+import com.yuyakaido.android.cardstackview.CarouselOrientation
+import com.yuyakaido.android.cardstackview.CarouselSetting
 import com.yuyakaido.android.cardstackview.internal.CardStackState
+import com.yuyakaido.android.cardstackview.StackLayout
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
@@ -101,6 +105,70 @@ class CardStackLayoutManagerTest {
     }
 
     @Test
+    fun `scrollHorizontallyBy should block left drag when disabled`() {
+        layoutManager.cardStackState.topPosition = 0
+        layoutManager.cardStackState.status = CardStackState.Status.Idle
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Manual
+        layoutManager.cardStackSetting.canScrollHorizontal = true
+        layoutManager.cardStackSetting.canScrollLeft = false
+        layoutManager.cardStackSetting.canScrollRight = true
+        `when`(mockState.itemCount).thenReturn(10)
+
+        val result = layoutManager.scrollHorizontallyBy(10, mockRecycler, mockState)
+
+        assertEquals(0, result)
+        assertEquals(0, layoutManager.cardStackState.dx)
+    }
+
+    @Test
+    fun `scrollHorizontallyBy should block right drag when disabled`() {
+        layoutManager.cardStackState.topPosition = 0
+        layoutManager.cardStackState.status = CardStackState.Status.Idle
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Manual
+        layoutManager.cardStackSetting.canScrollHorizontal = true
+        layoutManager.cardStackSetting.canScrollLeft = true
+        layoutManager.cardStackSetting.canScrollRight = false
+        `when`(mockState.itemCount).thenReturn(10)
+
+        val result = layoutManager.scrollHorizontallyBy(-10, mockRecycler, mockState)
+
+        assertEquals(0, result)
+        assertEquals(0, layoutManager.cardStackState.dx)
+    }
+
+    @Test
+    fun `scrollVerticallyBy should block up drag when disabled`() {
+        layoutManager.cardStackState.topPosition = 0
+        layoutManager.cardStackState.status = CardStackState.Status.Idle
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Manual
+        layoutManager.cardStackSetting.canScrollVertical = true
+        layoutManager.cardStackSetting.canScrollUp = false
+        layoutManager.cardStackSetting.canScrollDown = true
+        `when`(mockState.itemCount).thenReturn(10)
+
+        val result = layoutManager.scrollVerticallyBy(10, mockRecycler, mockState)
+
+        assertEquals(0, result)
+        assertEquals(0, layoutManager.cardStackState.dy)
+    }
+
+    @Test
+    fun `scrollVerticallyBy should block down drag when disabled`() {
+        layoutManager.cardStackState.topPosition = 0
+        layoutManager.cardStackState.status = CardStackState.Status.Idle
+        layoutManager.cardStackSetting.swipeableMethod = SwipeableMethod.Manual
+        layoutManager.cardStackSetting.canScrollVertical = true
+        layoutManager.cardStackSetting.canScrollUp = true
+        layoutManager.cardStackSetting.canScrollDown = false
+        `when`(mockState.itemCount).thenReturn(10)
+
+        val result = layoutManager.scrollVerticallyBy(-10, mockRecycler, mockState)
+
+        assertEquals(0, result)
+        assertEquals(0, layoutManager.cardStackState.dy)
+    }
+
+    @Test
     fun `updateProportion should update proportion correctly`() {
         val mockView = mock(View::class.java)
         `when`(mockView.top).thenReturn(100)
@@ -120,6 +188,25 @@ class CardStackLayoutManagerTest {
     fun `setStackFrom should update setting`() {
         layoutManager.setStackFrom(StackFrom.Top)
         assertEquals(StackFrom.Top, layoutManager.cardStackSetting.stackFrom)
+    }
+
+    @Test
+    fun `setStackLayout should update setting`() {
+        layoutManager.setStackLayout(StackLayout.Linear)
+        assertEquals(StackLayout.Linear, layoutManager.cardStackSetting.stackLayout)
+    }
+
+    @Test
+    fun `setStackStyle should update setting`() {
+        layoutManager.setStackStyle(CardStackStyle.Carousel)
+        assertEquals(CardStackStyle.Carousel, layoutManager.cardStackSetting.stackStyle)
+    }
+
+    @Test
+    fun `setCarouselSetting should update setting`() {
+        val setting = CarouselSetting(CarouselOrientation.Horizontal, 0.2f, 0.7f, 6f)
+        layoutManager.setCarouselSetting(setting)
+        assertEquals(setting, layoutManager.cardStackSetting.carouselSetting)
     }
 
     @Test
@@ -210,6 +297,35 @@ class CardStackLayoutManagerTest {
     }
 
     @Test
+    fun `setManualRewindDirections should update setting`() {
+        val rewinds = listOf(Direction.Bottom)
+        layoutManager.setManualRewindDirections(rewinds)
+        assertEquals(rewinds, layoutManager.cardStackSetting.manualRewindDirections)
+    }
+
+    @Test
+    fun `setDirections should throw when overlapping manual rewind directions`() {
+        layoutManager.setManualRewindDirections(listOf(Direction.Bottom))
+        try {
+            layoutManager.setDirections(listOf(Direction.Bottom, Direction.Top))
+            fail("Expected IllegalArgumentException")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message?.contains("must not overlap") == true)
+        }
+    }
+
+    @Test
+    fun `setManualRewindDirections should throw when overlapping swipe directions`() {
+        layoutManager.setDirections(listOf(Direction.Left, Direction.Right))
+        try {
+            layoutManager.setManualRewindDirections(listOf(Direction.Left))
+            fail("Expected IllegalArgumentException")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message?.contains("must not overlap") == true)
+        }
+    }
+
+    @Test
     fun `setCanScrollHorizontal should update setting`() {
         layoutManager.setCanScrollHorizontal(false)
         assertFalse(layoutManager.cardStackSetting.canScrollHorizontal)
@@ -219,6 +335,30 @@ class CardStackLayoutManagerTest {
     fun `setCanScrollVertical should update setting`() {
         layoutManager.setCanScrollVertical(false)
         assertFalse(layoutManager.cardStackSetting.canScrollVertical)
+    }
+
+    @Test
+    fun `setCanScrollLeft should update setting`() {
+        layoutManager.setCanScrollLeft(false)
+        assertFalse(layoutManager.cardStackSetting.canScrollLeft)
+    }
+
+    @Test
+    fun `setCanScrollRight should update setting`() {
+        layoutManager.setCanScrollRight(false)
+        assertFalse(layoutManager.cardStackSetting.canScrollRight)
+    }
+
+    @Test
+    fun `setCanScrollUp should update setting`() {
+        layoutManager.setCanScrollUp(false)
+        assertFalse(layoutManager.cardStackSetting.canScrollUp)
+    }
+
+    @Test
+    fun `setCanScrollDown should update setting`() {
+        layoutManager.setCanScrollDown(false)
+        assertFalse(layoutManager.cardStackSetting.canScrollDown)
     }
 
     @Test

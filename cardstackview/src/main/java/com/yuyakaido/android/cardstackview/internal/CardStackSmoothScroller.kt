@@ -14,7 +14,8 @@ class CardStackSmoothScroller(
         AutomaticSwipe,
         AutomaticRewind,
         ManualSwipe,
-        ManualCancel
+        ManualCancel,
+        ManualRewind
     }
 
     override fun onSeekTargetStep(
@@ -23,7 +24,7 @@ class CardStackSmoothScroller(
         state: RecyclerView.State,
         action: Action
     ) {
-        if (type == ScrollType.AutomaticRewind) {
+        if (type == ScrollType.AutomaticRewind || type == ScrollType.ManualRewind) {
             val setting = manager.cardStackSetting.rewindAnimationSetting
             action.update(
                 -getDx(setting),
@@ -54,6 +55,16 @@ class CardStackSmoothScroller(
             }
 
             ScrollType.AutomaticRewind -> {
+                setting = manager.cardStackSetting.rewindAnimationSetting
+                action.update(
+                    x,
+                    y,
+                    setting.getDuration(),
+                    setting.getInterpolator()
+                )
+            }
+
+            ScrollType.ManualRewind -> {
                 setting = manager.cardStackSetting.rewindAnimationSetting
                 action.update(
                     x,
@@ -97,6 +108,7 @@ class CardStackSmoothScroller(
             }
 
             ScrollType.AutomaticRewind -> state.next(CardStackState.Status.RewindAnimating)
+            ScrollType.ManualRewind -> state.next(CardStackState.Status.RewindAnimating)
             ScrollType.ManualSwipe -> {
                 state.next(CardStackState.Status.ManualSwipeAnimating)
                 listener.onCardDisappeared(manager.topView, manager.topPosition)
@@ -110,7 +122,13 @@ class CardStackSmoothScroller(
         val listener = manager.cardStackListener
         when (type) {
             ScrollType.AutomaticSwipe -> {}
+
             ScrollType.AutomaticRewind -> {
+                listener.onCardRewound()
+                listener.onCardAppeared(manager.topView, manager.topPosition)
+            }
+
+            ScrollType.ManualRewind -> {
                 listener.onCardRewound()
                 listener.onCardAppeared(manager.topView, manager.topPosition)
             }

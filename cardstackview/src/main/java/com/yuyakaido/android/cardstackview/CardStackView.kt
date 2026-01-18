@@ -32,9 +32,9 @@ class CardStackView @JvmOverloads constructor(
         if (layoutManager == null) {
             layoutManager = CardStackLayoutManager(context)
         }
-        if (getAdapter() != null) {
-            getAdapter()!!.unregisterAdapterDataObserver(observer)
-            getAdapter()!!.onDetachedFromRecyclerView(this)
+        getAdapter()?.let { currentAdapter ->
+            currentAdapter.unregisterAdapterDataObserver(observer)
+            currentAdapter.onDetachedFromRecyclerView(this)
         }
         adapter?.registerAdapterDataObserver(observer)
         super.setAdapter(adapter)
@@ -49,16 +49,16 @@ class CardStackView @JvmOverloads constructor(
     }
 
     fun swipe() {
-        if (layoutManager is CardStackLayoutManager) {
-            val manager = layoutManager as CardStackLayoutManager?
-            smoothScrollToPosition(manager!!.topPosition + 1)
+        val manager = layoutManager as? CardStackLayoutManager
+        manager?.let {
+            smoothScrollToPosition(it.topPosition + 1)
         }
     }
 
     fun rewind() {
-        if (layoutManager is CardStackLayoutManager) {
-            val manager = layoutManager as CardStackLayoutManager?
-            smoothScrollToPosition(manager!!.topPosition - 1)
+        val manager = layoutManager as? CardStackLayoutManager
+        manager?.let {
+            smoothScrollToPosition(it.topPosition - 1)
         }
     }
 
