@@ -33,3 +33,4 @@ proguard/
 *.ipr
 *.iws
 .idea/
+.vscode/settings.json
